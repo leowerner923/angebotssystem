@@ -1,135 +1,71 @@
 import { NextRequest, NextResponse } from 'next/server'
-import type { WizardState } from '@/lib/types/wizard'
-import { calculateEstimate } from '@/lib/pricing'
-import { calculateLeadScore } from '@/lib/lead-scoring'
-import { SERVICES } from '@/lib/company-config'
 import { supabaseServer } from '@/lib/supabaseServer'
-import { validateCity } from '@/lib/geo'
 
-interface CreateRequestBody {
-  company_id: string
-  wizardState: WizardState
-}
-
-/**
- * TEST ROUTE (wichtig zum Debuggen)
- * Öffne im Browser:
- * http://localhost:3000/api/create-request
- */
 export async function GET() {
-  return Response.json({ ok: true })
+  return NextResponse.json({ ok: true })
 }
 
-/**
- * MAIN POST ROUTE (Wizard sendet hierhin)
- */
 export async function POST(req: NextRequest) {
-  const body: CreateRequestBody = await req.json()
+  try {
+    const body = await req.json()
+    console.log("CREATE REQUEST BODY:", body)
 
-  if (!body.wizardState || !body.company_id) {
-    return NextResponse.json(
-      { error: 'Ungültige Anfrage.' },
-      { status: 400 }
-    )
-  }
+    const { name, email, service_type, square_meters } = body
 
-  const { wizardState, company_id } = body
+    if (!name || !email) {
+      return NextResponse.json(
+        { error: "Name oder Email fehlt" },
+        { status: 400 }
+      )
+    }
 
-  // Standort-Check
-  const cityCheck = validateCity(wizardState.city ?? '')
-  if (!cityCheck.valid) {
-    return NextResponse.json(
-      {
-        error:
-          cityCheck.reason === 'not_found'
-            ? 'Ort nicht gefunden.'
-            : `Ort außerhalb des Einzugsgebiets (${cityCheck.distanceKm} km, max. 50 km).`,
-      },
-      { status: 422 }
-    )
-  }
-
-  // Preis + Score
-  const estimate = calculateEstimate(wizardState)
-  const score = calculateLeadScore(wizardState, estimate.total)
-
-  // Kunde suchen
-  const { data: existingCustomer } = await supabaseServer
-    .from('customers')
-    .select('id')
-    .eq('email', wizardState.contactEmail.toLowerCase().trim())
-    .eq('company_id', company_id)
-    .maybeSingle()
-
-  let customerId: string
-
-  if (existingCustomer) {
-    customerId = existingCustomer.id
-
-    await supabaseServer
-      .from('customers')
-      .update({
-        name: wizardState.contactName.trim(),
-        phone: wizardState.contactPhone.trim(),
-        company: wizardState.contactCompany?.trim() || null,
-      })
-      .eq('id', customerId)
-  } else {
-    const { data: newCustomer, error: customerError } = await supabaseServer
+    // 1. Customer erstellen
+    const { data: customer, error: customerError } = await supabaseServer
       .from('customers')
       .insert({
-        company_id,
-        name: wizardState.contactName.trim(),
-        email: wizardState.contactEmail.toLowerCase().trim(),
-        phone: wizardState.contactPhone.trim(),
-        company: wizardState.contactCompany?.trim() || null,
+        name,
+        email,
       })
-      .select('id')
+      .select()
       .single()
 
-    if (customerError || !newCustomer) {
-      console.error('CUSTOMER ERROR:', customerError)
+    if (customerError) {
+      console.error("CUSTOMER ERROR:", customerError)
       return NextResponse.json(
-        { error: 'Kunde konnte nicht gespeichert werden.' },
+        { error: "Customer konnte nicht erstellt werden" },
         { status: 500 }
       )
     }
 
-    customerId = newCustomer.id
-  }
+    // 2. Request erstellen
+    const { data: request, error: requestError } = await supabaseServer
+      .from('requests')
+      .insert({
+        customer_id: customer.id,
+        service_type,
+        square_meters,
+        status: 'new',
+      })
+      .select()
+      .single()
 
-  // Service
-  const service = SERVICES.find(
-    (s) => s.id === wizardState.selectedServiceId
-  )
+    if (requestError) {
+      console.error("REQUEST ERROR:", requestError)
+      return NextResponse.json(
+        { error: "Request konnte nicht erstellt werden" },
+        { status: 500 }
+      )
+    }
 
-  // Request speichern
-  const { data: newRequest, error: requestError } = await supabaseServer
-    .from('requests')
-    .insert({
-      company_id,
-      customer_id: customerId,
-      service_type: service?.name ?? wizardState.selectedServiceId,
-      square_meters: wizardState.areaM2,
-      price: estimate.total,
-      status: 'new',
+    return NextResponse.json({
+      request_id: request.id,
     })
-    .select('id')
-    .single()
+  } catch (err) {
+    console.error("CREATE REQUEST CRASH:", err)
 
-  console.log('INSERT ERROR:', requestError)
-  console.log('INSERT DATA:', newRequest)
-
-  if (requestError || !newRequest) {
     return NextResponse.json(
-      { error: 'Anfrage konnte nicht gespeichert werden.' },
+      { error: "Serverfehler" },
       { status: 500 }
     )
   }
-
-  return NextResponse.json({
-    request_id: newRequest.id,
-    estimated_price: estimate.total,
-    lead_score: score,
-  })
 }
