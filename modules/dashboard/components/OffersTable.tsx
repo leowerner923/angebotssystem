@@ -37,21 +37,19 @@ export default function OffersTable() {
   const [offers, setOffers] = useState<OfferWithCustomer[]>([])
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
     setError(null)
-
     try {
       const res = await fetch(`/api/get-offers?company_id=${COMPANY_CONFIG.id}`)
       const json = await res.json()
-
       if (!res.ok) {
         setError(json.error ?? 'Fehler beim Laden')
         return
       }
-
       setOffers(json.offers ?? [])
     } catch (e) {
       setError('Netzwerkfehler')
@@ -95,6 +93,21 @@ export default function OffersTable() {
       }
     } finally {
       setUpdating(null)
+    }
+  }
+
+  async function handleDelete(id: string) {
+    if (!confirm('Angebot wirklich löschen?')) return
+    setDeleting(id)
+    try {
+      await fetch('/api/delete-offer', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      })
+      setOffers((prev) => prev.filter((o) => o.id !== id))
+    } finally {
+      setDeleting(null)
     }
   }
 
@@ -168,19 +181,30 @@ export default function OffersTable() {
       key: 'actions',
       header: '',
       render: (o: OfferWithCustomer) => (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={() => handleView(o.id)}
             className="text-xs text-gray-600 hover:underline"
           >
             PDF
           </button>
+
+          {o.status !== 'draft' && (
+            <button
+              onClick={() => handleStatusChange(o.id, 'draft')}
+              className="text-xs text-gray-400 hover:underline"
+            >
+              Zurücksetzen
+            </button>
+          )}
+
           <button
             onClick={() => handleStatusChange(o.id, 'review')}
             className="text-xs text-blue-600 hover:underline"
           >
             Zur Prüfung
           </button>
+
           {o.status === 'review' && (
             <button
               onClick={() => handleSendOffer(o.id)}
@@ -190,6 +214,14 @@ export default function OffersTable() {
               {updating === o.id ? '...' : 'Senden'}
             </button>
           )}
+
+          <button
+            onClick={() => handleDelete(o.id)}
+            disabled={deleting === o.id}
+            className="text-xs text-red-400 hover:text-red-600 hover:underline disabled:opacity-50"
+          >
+            {deleting === o.id ? '...' : 'Löschen'}
+          </button>
         </div>
       ),
     },
