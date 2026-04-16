@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
     const customerName = offer.customers?.name ?? 'Kunde'
     const price = offer.price.toFixed(2).replace('.', ',')
 
-    await resend.emails.send({
+    const emailPayload: any = {
       from: 'onboarding@resend.dev',
       to: offer.customers.email,
       subject: `Ihr Angebot von ${COMPANY_CONFIG.name}`,
@@ -53,7 +53,19 @@ export async function POST(req: NextRequest) {
           ${COMPANY_CONFIG.location}</p>
         </div>
       `,
-    })
+    }
+
+    if (offer.pdf_url) {
+      const pdfBuffer = Buffer.from(offer.pdf_url, 'base64')
+      emailPayload.attachments = [
+        {
+          filename: `Angebot-${offer.id.slice(-8).toUpperCase()}.pdf`,
+          content: pdfBuffer,
+        },
+      ]
+    }
+
+    await resend.emails.send(emailPayload)
 
     await supabaseServer
       .from('offers')
