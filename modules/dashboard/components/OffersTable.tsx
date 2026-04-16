@@ -155,15 +155,11 @@ export default function OffersTable() {
           <select
             value={o.status}
             disabled={updating === o.id}
-            onChange={(e) =>
-              handleStatusChange(o.id, e.target.value as OfferStatus)
-            }
+            onChange={(e) => handleStatusChange(o.id, e.target.value as OfferStatus)}
             className={`rounded px-2 py-1 text-xs ${STATUS_COLORS[o.status]}`}
           >
             {(Object.keys(STATUS_LABELS) as OfferStatus[]).map((s) => (
-              <option key={s} value={s}>
-                {STATUS_LABELS[s]}
-              </option>
+              <option key={s} value={s}>{STATUS_LABELS[s]}</option>
             ))}
           </select>
           {updating === o.id && (
@@ -181,30 +177,21 @@ export default function OffersTable() {
       key: 'actions',
       header: '',
       render: (o: OfferWithCustomer) => (
-        <div className="flex items-center gap-2 flex-wrap">
-          <button
-            onClick={() => handleView(o.id)}
-            className="text-xs text-gray-600 hover:underline"
-          >
-            PDF
-          </button>
-
-          {o.status !== 'draft' && (
+        <div className="flex flex-col gap-1.5">
+          {o.pdf_url && (
             <button
-              onClick={() => handleStatusChange(o.id, 'draft')}
-              className="text-xs text-gray-400 hover:underline"
+              onClick={() => handleView(o.id)}
+              className="text-xs text-gray-600 hover:underline"
             >
-              Zurücksetzen
+              PDF
             </button>
           )}
-
           <button
             onClick={() => handleStatusChange(o.id, 'review')}
             className="text-xs text-blue-600 hover:underline"
           >
             Zur Prüfung
           </button>
-
           {o.status === 'review' && (
             <button
               onClick={() => handleSendOffer(o.id)}
@@ -214,7 +201,6 @@ export default function OffersTable() {
               {updating === o.id ? '...' : 'Senden'}
             </button>
           )}
-
           <button
             onClick={() => handleDelete(o.id)}
             disabled={deleting === o.id}
