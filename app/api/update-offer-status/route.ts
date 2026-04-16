@@ -1,26 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseServer } from '@/lib/supabaseServer'
-import type { OfferStatus } from '@/lib/types/offer'
 
-const VALID_STATUSES: OfferStatus[] = ['draft', 'sent', 'accepted', 'rejected']
+export async function POST(req: NextRequest) {
+  try {
+    const { id, status } = await req.json()
 
-export async function PATCH(req: NextRequest): Promise<NextResponse> {
-  const body = await req.json()
-  const { id, status } = body as { id?: string; status?: string }
+    if (!id || !status) {
+      return NextResponse.json(
+        { error: 'Missing id or status' },
+        { status: 400 }
+      )
+    }
 
-  if (!id || !status || !VALID_STATUSES.includes(status as OfferStatus)) {
-    return NextResponse.json({ error: 'Ungültige Anfrage.' }, { status: 400 })
+    const { data, error } = await supabaseServer
+      .from('offers')
+      .update({ status })
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) {
+      console.error('UPDATE ERROR:', error)
+      return NextResponse.json(
+        { error: error.message },
+        { status: 500 }
+      )
+    }
+
+    return NextResponse.json({ success: true, offer: data })
+  } catch (err) {
+    console.error(err)
+    return NextResponse.json(
+      { error: 'Server error' },
+      { status: 500 }
+    )
   }
-
-  const { error } = await supabaseServer
-    .from('offers')
-    .update({ status })
-    .eq('id', id)
-
-  if (error) {
-    console.error('Fehler beim Aktualisieren des Angebotsstatus:', error)
-    return NextResponse.json({ error: 'Status konnte nicht aktualisiert werden.' }, { status: 500 })
-  }
-
-  return NextResponse.json({ ok: true })
 }
