@@ -1,6 +1,6 @@
 import type { Customer, RequestDetails } from './database'
 
-export type OfferStatus = 'draft' | 'sent' | 'accepted' | 'rejected'
+export type OfferStatus = 'draft' | 'review' | 'sent' | 'accepted' | 'rejected'
 
 export interface Offer {
   id: string
