@@ -45,44 +45,4 @@ export async function POST(req: NextRequest) {
 
     const pdfData: OfferPdfData = {
       offerNumber,
-      companyName: COMPANY_CONFIG.name,
-      companyLocation: COMPANY_CONFIG.location,
-      customer: {
-        name: request.customers?.name ?? '',
-        email: request.customers?.email ?? '',
-        phone: request.customers?.phone ?? undefined,
-        company: request.customers?.company ?? undefined,
-      },
-      serviceTitle: service?.name ?? request.service_type,
-      details: {
-        area_m2: request.square_meters ?? undefined,
-        window_count: request.window_count ?? undefined,
-        floor_count: request.floor_count ?? undefined,
-        cleaning_interval: request.cleaning_interval ?? undefined,
-        city: request.city ?? undefined,
-        extras: [],
-      },
-      price: calculatedPrice,
-      createdAt: new Date(),
-    }
-
-    let pdfBase64: string | null = null
-    try {
-      const pdfBytes = await generateOfferPdf(pdfData)
-      pdfBase64 = Buffer.from(pdfBytes).toString('base64')
-    } catch (err) {
-      console.error('PDF Fehler:', err)
-    }
-
-    const { data: offer, error } = await supabaseServer
-      .from('offers')
-      .insert({
-        company_id: request.company_id ?? COMPANY_CONFIG.id,
-        request_id,
-        customer_id: request.customer_id,
-        title: service?.name ?? request.service_type,
-        description: `Leistung: ${service?.name ?? request.service_type}${request.square_meters ? ` · Fläche: ${request.square_meters} m²` : ''}${request.window_count ? ` · Fenster: ${request.window_count}` : ''}`,
-        price: calculatedPrice,
-        status: 'draft',
-        pdf_url: pdfBase64,
-      }
+      companyName: COMPAN
