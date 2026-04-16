@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { COMPANY_CONFIG } from '@/lib/company-config'
 import { supabase } from '@/lib/supabaseClient'
@@ -45,14 +46,9 @@ const NAV_LINKS = [
   },
 ]
 
-interface DashboardLayoutProps {
-  children: React.ReactNode
-}
-
-export default function DashboardLayout({ children }: DashboardLayoutProps) {
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
-  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [authChecked, setAuthChecked] = useState(false)
 
   useEffect(() => {
@@ -65,126 +61,47 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     })
   }, [router])
 
-  async function handleLogout() {
-    await supabase.auth.signOut()
-    router.push('/login')
-  }
-
-  function isActive(href: string) {
-    if (href === '/dashboard') return pathname === '/dashboard'
-    return pathname.startsWith(href)
-  }
-
-  if (!authChecked) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600" />
-      </div>
-    )
-  }
-
-  const SidebarContent = () => (
-    <>
-      <div className="flex h-16 items-center border-b border-white/10 px-5">
-        <div>
-          <p className="text-sm font-bold text-white">{COMPANY_CONFIG.name}</p>
-          <p className="text-xs text-slate-400">{COMPANY_CONFIG.location}</p>
-        </div>
-      </div>
-
-      <nav className="flex-1 p-3">
-        <ul className="space-y-0.5">
-          {NAV_LINKS.map((link) => {
-            const active = isActive(link.href)
-            return (
-              <li key={link.href}>
-                <Link
-                  href={link.href}
-                  onClick={() => setSidebarOpen(false)}
-                  className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-                    active
-                      ? 'bg-white/10 text-white'
-                      : 'text-slate-300 hover:bg-white/5 hover:text-white'
-                  }`}
-                >
-                  <span className={active ? 'text-white' : 'text-slate-400'}>{link.icon}</span>
-                  {link.label}
-                </Link>
-              </li>
-            )
-          })}
-        </ul>
-      </nav>
-
-      <div className="border-t border-white/10 p-4 space-y-2">
-        <Link
-          href="/"
-          className="flex items-center gap-2 text-xs text-slate-400 transition-colors hover:text-white"
-        >
-          <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
-          </svg>
-          Zur Startseite
-        </Link>
-        <button
-          onClick={handleLogout}
-          className="flex cursor-pointer items-center gap-2 text-xs text-slate-400 transition-colors hover:text-red-400"
-        >
-          <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
-          </svg>
-          Abmelden
-        </button>
-      </div>
-    </>
-  )
+  if (!authChecked) return null
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      {/* Desktop Sidebar */}
-      <aside
-        className="hidden w-60 flex-shrink-0 flex-col md:flex"
-        style={{ backgroundColor: 'var(--sidebar-bg)' }}
-      >
-        <SidebarContent />
+      
+      <aside className="w-60 bg-slate-900 text-white flex flex-col">
+        
+        {/* LOGO */}
+        <div className="flex items-center gap-3 px-5 py-4 border-b border-white/10">
+          <Image
+            src="/logo.png"
+            alt="Logo"
+            width={32}
+            height={32}
+            className="rounded-md"
+          />
+          <span className="text-sm font-bold">{COMPANY_CONFIG.name}</span>
+        </div>
+
+        {/* NAV */}
+        <nav className="flex-1 p-3">
+          {NAV_LINKS.map((link) => {
+            const active = pathname.startsWith(link.href)
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm ${
+                  active ? 'bg-white/10' : 'text-slate-300 hover:bg-white/5'
+                }`}
+              >
+                {link.icon}
+                {link.label}
+              </Link>
+            )
+          })}
+        </nav>
+
       </aside>
 
-      {/* Mobile Overlay */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-20 bg-black/50 md:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      {/* Mobile Slide-in Sidebar */}
-      <aside
-        className={`fixed left-0 top-0 z-30 flex h-full w-60 flex-col transition-transform duration-200 md:hidden ${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
-        style={{ backgroundColor: 'var(--sidebar-bg)' }}
-      >
-        <SidebarContent />
-      </aside>
-
-      {/* Mobile Top Bar */}
-      <div className="fixed inset-x-0 top-0 z-10 flex h-14 items-center gap-3 border-b border-gray-200 bg-white px-4 shadow-sm md:hidden">
-        <button
-          onClick={() => setSidebarOpen(true)}
-          className="cursor-pointer rounded-md p-1.5 text-gray-500 hover:bg-gray-100"
-          aria-label="Menü öffnen"
-        >
-          <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-          </svg>
-        </button>
-        <span className="text-sm font-bold text-gray-900">{COMPANY_CONFIG.name}</span>
-      </div>
-
-      {/* Main Content */}
-      <main className="flex-1 overflow-auto pt-14 md:pt-0">
-        <div className="p-6 md:p-8">{children}</div>
-      </main>
+      <main className="flex-1 p-8">{children}</main>
     </div>
   )
 }
