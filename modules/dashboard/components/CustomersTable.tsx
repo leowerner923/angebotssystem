@@ -16,6 +16,7 @@ function formatDate(iso: string) {
 export default function CustomersTable() {
   const [customers, setCustomers] = useState<CustomerWithCount[]>([])
   const [loading, setLoading] = useState(true)
+  const [deleting, setDeleting] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const load = useCallback(async () => {
@@ -25,14 +26,11 @@ export default function CustomersTable() {
       const res = await fetch(`/api/get-customers?company_id=${COMPANY_CONFIG.id}`)
       const json = await res.json()
       if (!res.ok) {
-        console.error('[CustomersTable] API Fehler:', res.status, json)
         setError(`API-Fehler ${res.status}: ${json.error ?? 'Unbekannter Fehler'}`)
         return
       }
-      console.log('[CustomersTable] Geladen:', (json.customers ?? []).length, 'Kunden')
       setCustomers(json.customers ?? [])
     } catch (e) {
-      console.error('[CustomersTable] Netzwerkfehler:', e)
       setError('Netzwerkfehler beim Laden der Kunden.')
     } finally {
       setLoading(false)
@@ -42,6 +40,21 @@ export default function CustomersTable() {
   useEffect(() => {
     load()
   }, [load])
+
+  async function handleDelete(id: string) {
+    if (!confirm('Kunden wirklich löschen? Alle zugehörigen Anfragen werden ebenfalls gelöscht.')) return
+    setDeleting(id)
+    try {
+      await fetch('/api/delete-customer', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      })
+      setCustomers((prev) => prev.filter((c) => c.id !== id))
+    } finally {
+      setDeleting(null)
+    }
+  }
 
   const columns = [
     {
@@ -81,6 +94,19 @@ export default function CustomersTable() {
       key: 'created_at',
       header: 'Seit',
       render: (c: CustomerWithCount) => formatDate(c.created_at),
+    },
+    {
+      key: 'actions',
+      header: '',
+      render: (c: CustomerWithCount) => (
+        <button
+          onClick={() => handleDelete(c.id)}
+          disabled={deleting === c.id}
+          className="text-xs text-red-400 hover:text-red-600 hover:underline disabled:opacity-50"
+        >
+          {deleting === c.id ? '...' : 'Löschen'}
+        </button>
+      ),
     },
   ]
 
