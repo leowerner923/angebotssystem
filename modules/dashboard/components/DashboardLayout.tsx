@@ -65,31 +65,32 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      
-      <aside className="w-60 bg-slate-900 text-white flex flex-col">
-        
+      <aside className="w-64 bg-slate-900 text-white flex flex-col">
+
         {/* LOGO */}
-        <div className="flex items-center gap-3 px-5 py-4 border-b border-white/10">
+        <div className="flex flex-col items-center gap-2 px-5 py-6 border-b border-white/10">
           <Image
             src="/logo.png"
             alt="Logo"
-            width={32}
-            height={32}
-            className="rounded-md"
+            width={80}
+            height={80}
+            className="rounded-xl"
           />
-          <span className="text-sm font-bold">{COMPANY_CONFIG.name}</span>
+          <span className="text-xs text-slate-400 text-center">{COMPANY_CONFIG.location}</span>
         </div>
 
         {/* NAV */}
-        <nav className="flex-1 p-3">
+        <nav className="flex-1 p-3 space-y-1">
           {NAV_LINKS.map((link) => {
-            const active = pathname.startsWith(link.href)
+            const active = pathname === link.href
             return (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm ${
-                  active ? 'bg-white/10' : 'text-slate-300 hover:bg-white/5'
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+                  active
+                    ? 'bg-white/15 text-white font-medium'
+                    : 'text-slate-300 hover:bg-white/8 hover:text-white'
                 }`}
               >
                 {link.icon}
@@ -98,6 +99,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             )
           })}
         </nav>
+
+        {/* FOOTER */}
+        <div className="px-5 py-4 border-t border-white/10">
+          <p className="text-xs text-slate-500 text-center">{COMPANY_CONFIG.name}</p>
+        </div>
 
       </aside>
 

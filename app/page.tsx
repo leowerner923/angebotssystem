@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { useState } from 'react'
 import { COMPANY_CONFIG } from '@/lib/company-config'
 
@@ -57,7 +58,6 @@ export default function HomePage() {
 
   return (
     <main className="flex min-h-screen flex-col bg-white">
-      {/* Modals */}
       {modal === 'impressum' && (
         <Modal title="Impressum" onClose={() => setModal(null)}>
           <p className="font-semibold">Angaben gemäß § 5 TMG</p>
@@ -72,22 +72,16 @@ export default function HomePage() {
         <Modal title="Datenschutzerklärung" onClose={() => setModal(null)}>
           <p className="font-semibold">1. Verantwortlicher</p>
           <p className="mt-2">Leonard Werner, Odenwaldstraße 3, 74850 Schefflenz<br />E-Mail: leowerner923@gmail.com</p>
-
           <p className="mt-4 font-semibold">2. Welche Daten wir erheben</p>
           <p className="mt-2">Wenn Sie unser Anfrageformular nutzen, erheben wir: Name, E-Mail-Adresse, Telefonnummer, Standort sowie Angaben zur gewünschten Leistung.</p>
-
           <p className="mt-4 font-semibold">3. Zweck der Datenverarbeitung</p>
           <p className="mt-2">Die Daten werden ausschließlich zur Erstellung und Übermittlung eines unverbindlichen Angebots verwendet.</p>
-
           <p className="mt-4 font-semibold">4. Speicherung</p>
           <p className="mt-2">Ihre Daten werden auf Servern von Supabase (supabase.com) gespeichert. Supabase ist DSGVO-konform und speichert Daten in der EU.</p>
-
           <p className="mt-4 font-semibold">5. Weitergabe an Dritte</p>
           <p className="mt-2">Ihre Daten werden nicht an Dritte weitergegeben, außer an den jeweiligen Handwerksbetrieb zur Angebotserstellung.</p>
-
           <p className="mt-4 font-semibold">6. Ihre Rechte</p>
           <p className="mt-2">Sie haben das Recht auf Auskunft, Berichtigung und Löschung Ihrer Daten. Kontaktieren Sie uns per E-Mail.</p>
-
           <p className="mt-4 font-semibold">7. Hosting & Dienste</p>
           <p className="mt-2">Hosting: Vercel (vercel.com) · E-Mail-Versand: Resend (resend.com)</p>
         </Modal>
@@ -95,7 +89,10 @@ export default function HomePage() {
 
       {/* Header */}
       <header className="flex items-center justify-between border-b border-gray-100 bg-white px-6 py-4 shadow-sm">
-        <span className="text-lg font-bold text-gray-900">{COMPANY_CONFIG.name}</span>
+        <div className="flex items-center gap-3">
+          <Image src="/logo.png" alt="Logo" width={40} height={40} className="rounded-lg" />
+          <span className="text-lg font-bold text-gray-900">{COMPANY_CONFIG.name}</span>
+        </div>
         <Link
           href="/dashboard"
           className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900"
@@ -169,16 +166,10 @@ export default function HomePage() {
       <footer className="border-t border-gray-100 px-6 py-5 text-center text-xs text-gray-400">
         <p>© {new Date().getFullYear()} {COMPANY_CONFIG.name} · {COMPANY_CONFIG.location}</p>
         <div className="mt-2 flex justify-center gap-4">
-          <button
-            onClick={() => setModal('impressum')}
-            className="hover:text-gray-600 underline"
-          >
+          <button onClick={() => setModal('impressum')} className="hover:text-gray-600 underline">
             Impressum
           </button>
-          <button
-            onClick={() => setModal('datenschutz')}
-            className="hover:text-gray-600 underline"
-          >
+          <button onClick={() => setModal('datenschutz')} className="hover:text-gray-600 underline">
             Datenschutz
           </button>
         </div>
