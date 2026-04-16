@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import { COMPANY_CONFIG } from '@/lib/company-config'
-import DashboardLayout from '@/modules/dashboard/components/DashboardLayout'
 import CustomersTable from '@/modules/dashboard/components/CustomersTable'
 
 export const metadata: Metadata = {
@@ -9,12 +8,10 @@ export const metadata: Metadata = {
 
 export default function KundenPage() {
   return (
-    <DashboardLayout>
+    <>
       <h1 className="text-xl font-semibold text-gray-900">Kunden</h1>
-      <p className="mt-1 text-sm text-gray-500">Alle erfassten Kunden mit Anfragenanzahl.</p>
-      <div className="mt-6">
-        <CustomersTable />
-      </div>
-    </DashboardLayout>
+      <p className="mt-1 text-sm text-gray-500">Alle Kunden im Überblick.</p>
+      <CustomersTable />
+    </>
   )
 }

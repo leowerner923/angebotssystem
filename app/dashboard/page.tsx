@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import { COMPANY_CONFIG } from '@/lib/company-config'
-import DashboardLayout from '@/modules/dashboard/components/DashboardLayout'
 import DashboardStats from '@/modules/dashboard/components/DashboardStats'
 
 export const metadata: Metadata = {
@@ -9,10 +8,10 @@ export const metadata: Metadata = {
 
 export default function DashboardPage() {
   return (
-    <DashboardLayout>
+    <>
       <h1 className="text-xl font-semibold text-gray-900">Übersicht</h1>
       <p className="mt-1 text-sm text-gray-500">Willkommen zurück, {COMPANY_CONFIG.name}.</p>
       <DashboardStats />
-    </DashboardLayout>
+    </>
   )
 }
