@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseServer } from '@/lib/supabaseServer'
+import { COMPANY_CONFIG } from '@/lib/company-config'
 
 export async function POST(req: NextRequest) {
   try {
@@ -22,6 +23,7 @@ export async function POST(req: NextRequest) {
     const { data: offer, error } = await supabaseServer
       .from('offers')
       .insert({
+        company_id: request.company_id ?? COMPANY_CONFIG.id,
         request_id,
         customer_id: request.customer_id,
         title: request.service_type,
