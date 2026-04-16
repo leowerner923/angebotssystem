@@ -71,4 +71,18 @@ export async function POST(req: NextRequest) {
       const pdfBytes = await generateOfferPdf(pdfData)
       pdfBase64 = Buffer.from(pdfBytes).toString('base64')
     } catch (err) {
-      console.err
+      console.error('PDF Fehler:', err)
+    }
+
+    const { data: offer, error } = await supabaseServer
+      .from('offers')
+      .insert({
+        company_id: request.company_id ?? COMPANY_CONFIG.id,
+        request_id,
+        customer_id: request.customer_id,
+        title: service?.name ?? request.service_type,
+        description: `Leistung: ${service?.name ?? request.service_type}${request.square_meters ? ` · Fläche: ${request.square_meters} m²` : ''}${request.window_count ? ` · Fenster: ${request.window_count}` : ''}`,
+        price: calculatedPrice,
+        status: 'draft',
+        pdf_url: pdfBase64,
+      }
