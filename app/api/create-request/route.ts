@@ -1,76 +1,73 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseServer } from '@/lib/supabaseServer'
 
-export async function POST(req: NextRequest) {
+export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
     const body = await req.json()
+    const { company_id, wizardState } = body
+
     console.log("CREATE REQUEST BODY:", body)
 
-    const wizard = body.wizardState
-
-    if (!wizard) {
-      return NextResponse.json({ error: "wizardState fehlt" }, { status: 400 })
+    if (!wizardState) {
+      return NextResponse.json({ error: 'wizardState fehlt' }, { status: 400 })
     }
 
-    const {
-      contactName,
-      contactEmail,
-      contactPhone,
-      contactCompany,
-      selectedServiceId,
-      areaM2,
-      city
-    } = wizard
-
-    if (!contactName || !contactEmail) {
-      return NextResponse.json({ error: "Kontakt fehlt" }, { status: 400 })
-    }
-
-    // 1. Customer erstellen
+    // 👉 1. CUSTOMER erstellen
     const { data: customer, error: customerError } = await supabaseServer
       .from('customers')
       .insert({
-        name: contactName,
-        email: contactEmail,
-        phone: contactPhone,
-        company: contactCompany || null,
-        city: city || null
+        name: wizardState.contactName,
+        email: wizardState.contactEmail,
+        phone: wizardState.contactPhone,
+        company: wizardState.contactCompany || null,
+        city: wizardState.city,
+        radius_km: wizardState.radius_km,
       })
       .select()
       .single()
 
-    if (customerError) {
+    if (customerError || !customer) {
       console.error("CUSTOMER ERROR:", customerError)
-      return NextResponse.json({ error: "Customer insert failed" }, { status: 500 })
+      return NextResponse.json(
+        { error: customerError?.message || "Customer insert failed" },
+        { status: 500 }
+      )
     }
 
-    // 2. Request erstellen
-    const { data: request, error: requestError } = await supabaseServer
+    // 👉 2. REQUEST erstellen
+    const { data: requestData, error: requestError } = await supabaseServer
       .from('requests')
       .insert({
+        company_id: company_id,
         customer_id: customer.id,
-        service_type: selectedServiceId,
-        square_meters: areaM2,
-        status: 'new'
+        service_type: wizardState.selectedServiceId,
+        square_meters: wizardState.areaM2,
+        window_count: wizardState.windowCount,
+        floor_count: wizardState.floorCount,
+        cleaning_interval: wizardState.cleaningInterval,
+        dirt_level: wizardState.dirtLevel,
+        price: 0,
+        status: 'new',
       })
       .select()
       .single()
 
-    if (requestError) {
+    if (requestError || !requestData) {
       console.error("REQUEST ERROR:", requestError)
-      return NextResponse.json({ error: "Request insert failed" }, { status: 500 })
+      return NextResponse.json(
+        { error: requestError?.message || "Request insert failed" },
+        { status: 500 }
+      )
     }
 
     return NextResponse.json({
-      request_id: request.id
+      success: true,
+      customer_id: customer.id,
+      request_id: requestData.id,
     })
 
   } catch (err) {
-    console.error("CREATE REQUEST CRASH:", err)
-
-    return NextResponse.json(
-      { error: "Serverfehler" },
-      { status: 500 }
-    )
+    console.error("UNEXPECTED ERROR:", err)
+    return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 }
