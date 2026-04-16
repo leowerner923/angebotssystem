@@ -1,3 +1,5 @@
+export const runtime = 'nodejs'
+
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseServer } from '@/lib/supabaseServer'
 import { COMPANY_CONFIG, SERVICES } from '@/lib/company-config'
@@ -70,6 +72,7 @@ export async function POST(req: NextRequest) {
     try {
       const pdfBytes = await generateOfferPdf(pdfData)
       pdfBase64 = Buffer.from(pdfBytes).toString('base64')
+      console.log('PDF generiert, Länge:', pdfBase64.length)
     } catch (err) {
       console.error('PDF Fehler:', err)
     }
