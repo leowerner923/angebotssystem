@@ -8,68 +8,46 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     console.log("CREATE REQUEST BODY:", body)
 
-    if (!company_id) {
-      return NextResponse.json({ error: 'company_id fehlt' }, { status: 400 })
+    if (!wizardState || !company_id) {
+      return NextResponse.json(
+        { error: 'wizardState oder company_id fehlt' },
+        { status: 400 }
+      )
     }
 
-    if (!wizardState) {
-      return NextResponse.json({ error: 'wizardState fehlt' }, { status: 400 })
+    // 👉 1. CUSTOMER erstellen
+    const { data: customer, error: customerError } = await supabaseServer
+      .from('customers')
+      .insert({
+        name: wizardState.contactName,
+        email: wizardState.contactEmail,
+        phone: wizardState.contactPhone,
+        company: wizardState.contactCompany || null,
+        city: wizardState.city,
+        radius_km: wizardState.radius_km,
+        company_id: company_id, // 🔥 FIX
+      })
+      .select()
+      .single()
+
+    if (customerError || !customer) {
+      console.error("CUSTOMER ERROR:", customerError)
+      return NextResponse.json(
+        { error: customerError?.message || "Customer insert failed" },
+        { status: 500 }
+      )
     }
 
-    // -----------------------------
-    // 1. CUSTOMER (dedup by email)
-    // -----------------------------
-    const email = wizardState.contactEmail
-
-    let customer = null
-
-    if (email) {
-      const { data: existingCustomer } = await supabaseServer
-        .from('customers')
-        .select('*')
-        .eq('email', email)
-        .single()
-
-      customer = existingCustomer
-    }
-
-    if (!customer) {
-      const { data: newCustomer, error: customerError } = await supabaseServer
-        .from('customers')
-        .insert({
-          name: wizardState.contactName,
-          email: wizardState.contactEmail,
-          phone: wizardState.contactPhone,
-          company: wizardState.contactCompany || null,
-          city: wizardState.city,
-          radius_km: wizardState.radius_km ?? null,
-        })
-        .select()
-        .single()
-
-      if (customerError || !newCustomer) {
-        console.error("CUSTOMER ERROR:", customerError)
-        return NextResponse.json(
-          { error: customerError?.message || "Customer insert failed" },
-          { status: 500 }
-        )
-      }
-
-      customer = newCustomer
-    }
-
-    // -----------------------------
-    // 2. REQUEST
-    // -----------------------------
+    // 👉 2. REQUEST erstellen
     const { data: requestData, error: requestError } = await supabaseServer
       .from('requests')
       .insert({
-        company_id,
+        company_id: company_id,
         customer_id: customer.id,
         service_type: wizardState.selectedServiceId,
-        square_meters: wizardState.areaM2 ?? null,
-        window_count: wizardState.windowCount ?? null,
-        floor_count: wizardState.floorCount ?? null,
+        square_meters: wizardState.areaM2,
+        window_count: wizardState.windowCount,
+        floor_count: wizardState.floorCount,
         cleaning_interval: wizardState.cleaningInterval,
         dirt_level: wizardState.dirtLevel,
         price: 0,
@@ -94,6 +72,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   } catch (err) {
     console.error("UNEXPECTED ERROR:", err)
-    return NextResponse.json({ error: 'Server error' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Server error' },
+      { status: 500 }
+    )
   }
 }
