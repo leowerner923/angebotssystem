@@ -7,6 +7,7 @@ import { COMPANY_CONFIG } from '@/lib/company-config'
 
 const STATUS_LABELS: Record<OfferStatus, string> = {
   draft: 'Entwurf',
+  review: 'In Prüfung',
   sent: 'Versendet',
   accepted: 'Angenommen',
   rejected: 'Abgelehnt',
@@ -14,6 +15,7 @@ const STATUS_LABELS: Record<OfferStatus, string> = {
 
 const STATUS_COLORS: Record<OfferStatus, string> = {
   draft: 'bg-gray-100 text-gray-700',
+  review: 'bg-yellow-100 text-yellow-700',
   sent: 'bg-blue-100 text-blue-700',
   accepted: 'bg-green-100 text-green-700',
   rejected: 'bg-red-100 text-red-700',
@@ -40,19 +42,19 @@ export default function OffersTable() {
   const load = useCallback(async () => {
     setLoading(true)
     setError(null)
+
     try {
       const res = await fetch(`/api/get-offers?company_id=${COMPANY_CONFIG.id}`)
       const json = await res.json()
+
       if (!res.ok) {
-        console.error('[OffersTable] API Fehler:', res.status, json)
-        setError(`API-Fehler ${res.status}: ${json.error ?? 'Unbekannter Fehler'}`)
+        setError(json.error ?? 'Fehler beim Laden')
         return
       }
-      console.log('[OffersTable] Geladen:', (json.offers ?? []).length, 'Angebote')
+
       setOffers(json.offers ?? [])
     } catch (e) {
-      console.error('[OffersTable] Netzwerkfehler:', e)
-      setError('Netzwerkfehler beim Laden der Angebote.')
+      setError('Netzwerkfehler')
     } finally {
       setLoading(false)
     }
@@ -70,7 +72,27 @@ export default function OffersTable() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, status }),
       })
-      setOffers((prev) => prev.map((o) => (o.id === id ? { ...o, status } : o)))
+      setOffers((prev) =>
+        prev.map((o) => (o.id === id ? { ...o, status } : o))
+      )
+    } finally {
+      setUpdating(null)
+    }
+  }
+
+  async function handleSendOffer(id: string) {
+    setUpdating(id)
+    try {
+      const res = await fetch('/api/send-offer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ offer_id: id }),
+      })
+      if (res.ok) {
+        setOffers((prev) =>
+          prev.map((o) => (o.id === id ? { ...o, status: 'sent' } : o))
+        )
+      }
     } finally {
       setUpdating(null)
     }
@@ -87,24 +109,13 @@ export default function OffersTable() {
       render: (o: OfferWithCustomer) => (
         <div className="min-w-[140px]">
           <p className="font-medium text-gray-900">{o.customers?.name ?? '—'}</p>
-          {o.customers?.company && (
-            <p className="text-xs text-gray-400">{o.customers.company}</p>
-          )}
           {o.customers?.email && (
-            <a
-              href={`mailto:${o.customers.email}`}
-              className="text-xs text-blue-600 hover:underline"
-            >
+            <a href={`mailto:${o.customers.email}`} className="text-xs text-blue-500 hover:underline">
               {o.customers.email}
             </a>
           )}
           {o.customers?.phone && (
-            <a
-              href={`tel:${o.customers.phone}`}
-              className="block text-xs text-gray-400 hover:text-gray-700"
-            >
-              {o.customers.phone}
-            </a>
+            <p className="text-xs text-gray-400">{o.customers.phone}</p>
           )}
         </div>
       ),
@@ -120,19 +131,21 @@ export default function OffersTable() {
       key: 'price',
       header: 'Preis',
       render: (o: OfferWithCustomer) => (
-        <span className="font-semibold text-gray-900">{formatPrice(o.price)}</span>
+        <span className="font-semibold">{formatPrice(o.price)}</span>
       ),
     },
     {
       key: 'status',
       header: 'Status',
       render: (o: OfferWithCustomer) => (
-        <div className="relative">
+        <div className="flex items-center gap-2">
           <select
             value={o.status}
             disabled={updating === o.id}
-            onChange={(e) => handleStatusChange(o.id, e.target.value as OfferStatus)}
-            className={`cursor-pointer rounded-full border-0 py-0.5 pl-2.5 pr-6 text-xs font-medium outline-none ring-1 ring-transparent transition-all focus:ring-2 focus:ring-blue-300 disabled:opacity-50 ${STATUS_COLORS[o.status]}`}
+            onChange={(e) =>
+              handleStatusChange(o.id, e.target.value as OfferStatus)
+            }
+            className={`rounded px-2 py-1 text-xs ${STATUS_COLORS[o.status]}`}
           >
             {(Object.keys(STATUS_LABELS) as OfferStatus[]).map((s) => (
               <option key={s} value={s}>
@@ -141,7 +154,7 @@ export default function OffersTable() {
             ))}
           </select>
           {updating === o.id && (
-            <span className="ml-2 text-xs text-gray-400">…</span>
+            <span className="text-xs text-gray-400">...</span>
           )}
         </div>
       ),
@@ -155,20 +168,37 @@ export default function OffersTable() {
       key: 'actions',
       header: '',
       render: (o: OfferWithCustomer) => (
-        <button
-          onClick={() => handleView(o.id)}
-          className="cursor-pointer whitespace-nowrap rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-50"
-        >
-          PDF ansehen
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => handleView(o.id)}
+            className="text-xs text-gray-600 hover:underline"
+          >
+            PDF
+          </button>
+          <button
+            onClick={() => handleStatusChange(o.id, 'review')}
+            className="text-xs text-blue-600 hover:underline"
+          >
+            Zur Prüfung
+          </button>
+          {o.status === 'review' && (
+            <button
+              onClick={() => handleSendOffer(o.id)}
+              disabled={updating === o.id}
+              className="text-xs bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700 disabled:opacity-50"
+            >
+              {updating === o.id ? '...' : 'Senden'}
+            </button>
+          )}
+        </div>
       ),
     },
   ]
 
   if (error) {
     return (
-      <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
-        <strong>Fehler beim Laden:</strong> {error}
+      <div className="rounded bg-red-50 p-3 text-sm text-red-700">
+        {error}
       </div>
     )
   }
@@ -178,7 +208,7 @@ export default function OffersTable() {
       columns={columns}
       data={offers}
       loading={loading}
-      emptyMessage="Noch keine Angebote vorhanden."
+      emptyMessage="Keine Angebote vorhanden"
     />
   )
 }
