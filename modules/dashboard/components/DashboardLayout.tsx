@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { COMPANY_CONFIG } from '@/lib/company-config'
 import { supabase } from '@/lib/supabaseClient'
@@ -67,15 +66,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div className="flex min-h-screen bg-gray-50">
       <aside className="w-64 bg-slate-900 text-white flex flex-col">
 
-        {/* LOGO */}
-        <div className="flex flex-col items-center gap-2 px-5 py-6 border-b border-white/10">
-          <Image
-            src="/logo.png"
-            alt="Logo"
-            width={80}
-            height={80}
-            className="rounded-xl"
-          />
+        {/* LOGO / SCHRIFTZUG */}
+        <div className="flex flex-col items-center gap-1 px-5 py-6 border-b border-white/10">
+          <span className="text-lg font-bold text-white text-center leading-tight">
+            {COMPANY_CONFIG.name}
+          </span>
           <span className="text-xs text-slate-400 text-center">{COMPANY_CONFIG.location}</span>
         </div>
 
@@ -102,7 +97,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {/* FOOTER */}
         <div className="px-5 py-4 border-t border-white/10">
-          <p className="text-xs text-slate-500 text-center">{COMPANY_CONFIG.name}</p>
+          <p className="text-xs text-slate-500 text-center">Angebotssystem</p>
         </div>
 
       </aside>

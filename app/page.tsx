@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import Image from 'next/image'
 import { useState } from 'react'
 import { COMPANY_CONFIG } from '@/lib/company-config'
 
@@ -89,10 +88,7 @@ export default function HomePage() {
 
       {/* Header */}
       <header className="flex items-center justify-between border-b border-gray-100 bg-white px-6 py-4 shadow-sm">
-        <div className="flex items-center gap-3">
-          <Image src="/logo.png" alt="Logo" width={40} height={40} className="rounded-lg" />
-          <span className="text-lg font-bold text-gray-900">{COMPANY_CONFIG.name}</span>
-        </div>
+        <span className="text-lg font-bold text-gray-900">{COMPANY_CONFIG.name}</span>
         <Link
           href="/dashboard"
           className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900"
