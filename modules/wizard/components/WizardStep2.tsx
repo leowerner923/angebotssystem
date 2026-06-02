@@ -61,7 +61,7 @@ export default function WizardStep2({ state, onChange, onNext, onBack }: WizardS
               <input
                 type="range"
                 min={0}
-                max={1000}
+                max={200}
                 step={1}
                 value={state.areaM2 ?? 0}
                 onChange={(e) => {
@@ -78,7 +78,7 @@ export default function WizardStep2({ state, onChange, onNext, onBack }: WizardS
                   const val = Number(e.target.value)
                   onChange({ areaM2: val > 0 ? val : null })
                 }}
-                className="w-20 shrink-0 rounded-lg border border-gray-200 px-2 py-1 text-right text-sm font-semibold text-gray-900 outline-none focus:border-blue-400"
+                className="h-10 w-20 shrink-0 rounded-lg border border-gray-200 px-2 text-right text-sm font-semibold text-gray-900 outline-none focus:border-blue-400"
               />
               <span className="shrink-0 text-sm text-gray-500">m²</span>
             </div>
