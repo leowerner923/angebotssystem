@@ -9,13 +9,6 @@ interface WizardSummaryProps {
   estimate: PriceEstimate
 }
 
-const INTERVAL_LABELS: Record<string, string> = {
-  weekly: 'Wöchentlich',
-  biweekly: 'Alle 2 Wochen',
-  monthly: 'Monatlich',
-  once: 'Einmalig',
-}
-
 export default function WizardSummary({ state, estimate }: WizardSummaryProps) {
   const service = SERVICES.find((s) => s.id === state.selectedServiceId)
   const extraServices = SERVICES.filter((s) => state.selectedExtras.includes(s.id))
@@ -40,20 +33,6 @@ export default function WizardSummary({ state, estimate }: WizardSummaryProps) {
           <div className="flex justify-between text-gray-500">
             <span>Fläche</span>
             <span>{state.areaM2} m²</span>
-          </div>
-        )}
-
-        {state.windowCount && (
-          <div className="flex justify-between text-gray-500">
-            <span>Fenster</span>
-            <span>{state.windowCount} Stück</span>
-          </div>
-        )}
-
-        {state.cleaningInterval && (
-          <div className="flex justify-between text-gray-500">
-            <span>Intervall</span>
-            <span>{INTERVAL_LABELS[state.cleaningInterval]}</span>
           </div>
         )}
 
