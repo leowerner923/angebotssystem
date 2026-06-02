@@ -105,17 +105,17 @@ export default function HomePage() {
       <section className="flex flex-1 flex-col items-center justify-center px-6 py-24 text-center">
         <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-4 py-1.5 text-sm font-medium text-blue-700">
           <span className="h-2 w-2 rounded-full bg-blue-500" />
-          Professionelle Gebäudereinigung · {COMPANY_CONFIG.location}
+          Professionelle Malerarbeiten · {COMPANY_CONFIG.location}
         </div>
 
         <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
-          Reinigungsangebot
+          Malerangebot
           <br className="hidden sm:block" />
           <span style={{ color: 'var(--brand-primary)' }}> in 2 Minuten</span>
         </h1>
 
         <p className="mt-6 max-w-lg text-lg leading-relaxed text-gray-500">
-          Preis berechnen, Anfrage senden – ohne Telefonieren.
+          Fläche angeben, Anfrage senden – ohne Telefonieren.
           Wir melden uns innerhalb von 24 Stunden bei Ihnen.
         </p>
 

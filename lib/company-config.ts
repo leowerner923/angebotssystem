@@ -1,75 +1,73 @@
 import type { ServiceType } from '@/lib/types/database'
 
-// Abgeleitet aus UNTERNEHMENSWISSEN.md – Rheinglanz Gebäudeservice
-// NIEMALS Firmendaten anderswo hardcoden. Immer aus dieser Datei importieren.
-
+// Maler-Demo – fiktiver Betrieb. Name & Preise frei anpassbar.
 export const COMPANY_CONFIG = {
-  id: 'glanz-sauber',
-  name: 'Rheinglanz Gebäudeservice',
+  id: 'farbwerk-maler',
+  name: 'Farbwerk Malermeister',
   location: 'Mosbach & Umgebung',
   primaryColor: '#1d4ed8',
-  targetGroups: ['Privatkunden', 'Büros', 'Gewerbe', 'Hausverwaltungen'],
+  targetGroups: ['Privatkunden', 'Hausverwaltungen', 'Gewerbe', 'Neubau'],
 } as const
 
-// Leistungen aus UNTERNEHMENSWISSEN.md – Preislogik (vereinfacht)
+// Demo-Preise – Richtwerte, bitte an echte Marktpreise anpassen.
 export const SERVICES: ServiceType[] = [
   {
-    id: 'unterhaltsreinigung',
+    id: 'innenanstrich',
     company_id: COMPANY_CONFIG.id,
-    name: 'Unterhaltsreinigung',
+    name: 'Innenanstrich (Wände)',
     pricing_type: 'per_m2',
-    price_per_unit: 2.0,
+    price_per_unit: 8.0,
     unit: 'm²',
-    description: 'Regelmäßige Reinigung Ihrer Räume',
+    description: 'Streichen von Innenwänden inkl. Grundierung',
   },
   {
-    id: 'glasreinigung',
+    id: 'deckenanstrich',
     company_id: COMPANY_CONFIG.id,
-    name: 'Glas- und Fensterreinigung',
-    pricing_type: 'per_unit',
-    price_per_unit: 4.0,
-    unit: 'Fenster',
-    description: 'Professionelle Reinigung aller Glasflächen',
+    name: 'Deckenanstrich',
+    pricing_type: 'per_m2',
+    price_per_unit: 10.0,
+    unit: 'm²',
+    description: 'Streichen von Decken inkl. Vorbereitung',
   },
   {
-    id: 'treppenhausreinigung',
+    id: 'tapezieren',
     company_id: COMPANY_CONFIG.id,
-    name: 'Treppenhausreinigung',
+    name: 'Tapezierarbeiten',
     pricing_type: 'per_m2',
-    price_per_unit: 2.0,
+    price_per_unit: 12.0,
     unit: 'm²',
-    description: 'Reinigung von Treppenhäusern und Fluren',
+    description: 'Tapezieren inkl. Untergrundvorbereitung',
   },
   {
-    id: 'bauendreinigung',
+    id: 'fassadenanstrich',
     company_id: COMPANY_CONFIG.id,
-    name: 'Bauendreinigung',
+    name: 'Fassadenanstrich',
     pricing_type: 'per_m2',
-    price_per_unit: 5.0,
+    price_per_unit: 35.0,
     unit: 'm²',
-    description: 'Gründliche Endreinigung nach Baumaßnahmen',
+    description: 'Außenanstrich der Fassade inkl. Grundierung',
   },
   {
-    id: 'grundreinigung',
+    id: 'verputz',
     company_id: COMPANY_CONFIG.id,
-    name: 'Grundreinigung',
+    name: 'Verputz- & Spachtelarbeiten',
     pricing_type: 'per_m2',
-    price_per_unit: 4.5,
+    price_per_unit: 25.0,
     unit: 'm²',
-    description: 'Intensive Tiefenreinigung',
+    description: 'Verputzen und Glätten von Wänden',
   },
   {
-    id: 'bueroereinigung',
+    id: 'lackierarbeiten',
     company_id: COMPANY_CONFIG.id,
-    name: 'Büroreinigung',
+    name: 'Lackierarbeiten',
     pricing_type: 'per_m2',
-    price_per_unit: 2.0,
+    price_per_unit: 30.0,
     unit: 'm²',
-    description: 'Regelmäßige Reinigung von Büroräumen',
+    description: 'Lackieren von Türen, Zargen und Holzflächen',
   },
 ]
 
 // Zusatzleistungen für Step 3 des Wizards
 export const EXTRA_SERVICES = SERVICES.filter((s) =>
-  ['grundreinigung', 'glasreinigung'].includes(s.id)
+  ['fassadenanstrich', 'lackierarbeiten'].includes(s.id)
 )
