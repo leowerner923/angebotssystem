@@ -25,7 +25,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         company: wizardState.contactCompany || null,
         city: wizardState.city,
         radius_km: wizardState.radius_km,
-        company_id: company_id, // 🔥 FIX
+        company_id: company_id,
       })
       .select()
       .single()
@@ -48,8 +48,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         square_meters: wizardState.areaM2,
         window_count: wizardState.windowCount,
         floor_count: wizardState.floorCount,
-        cleaning_interval: wizardState.cleaningInterval,
-        dirt_level: wizardState.dirtLevel,
+        cleaning_interval: wizardState.cleaningInterval ?? 'once',
+        dirt_level: wizardState.dirtLevel ?? 'normal',
         price: 0,
         status: 'new',
       })
