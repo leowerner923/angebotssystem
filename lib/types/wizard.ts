@@ -10,6 +10,9 @@ export interface WizardState {
   floorCount: number | null
   cleaningInterval: 'weekly' | 'biweekly' | 'monthly' | 'once' | null
   dirtLevel: 'normal' | 'heavy'
+  // Maler-spezifisch
+  surfaceCondition: 'new' | 'painted' | 'renovation'
+  coats: 1 | 2
   // Step 3
   selectedExtras: string[]
   // Step 4

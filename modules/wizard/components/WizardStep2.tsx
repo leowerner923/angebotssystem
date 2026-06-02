@@ -2,8 +2,19 @@
 
 import { useState } from 'react'
 import { SERVICES } from '@/lib/company-config'
-import { Button, Input } from '@/components/ui'
+import { Button, Input, Select } from '@/components/ui'
 import type { WizardStepProps } from '@/lib/types/wizard'
+
+const CONDITION_OPTIONS = [
+  { value: 'new', label: 'Neu verputzt' },
+  { value: 'painted', label: 'Bereits gestrichen' },
+  { value: 'renovation', label: 'Renovierungsbedürftig' },
+]
+
+const COATS_OPTIONS = [
+  { value: '1', label: 'Ein Anstrich' },
+  { value: '2', label: 'Zwei Anstriche (deckend)' },
+]
 
 export default function WizardStep2({ state, onChange, onNext, onBack }: WizardStepProps) {
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -85,6 +96,22 @@ export default function WizardStep2({ state, onChange, onNext, onBack }: WizardS
             {errors.areaM2 && <p className="text-xs text-red-500">{errors.areaM2}</p>}
           </div>
         )}
+
+        <Select
+          label="Zustand des Untergrunds"
+          name="surfaceCondition"
+          value={state.surfaceCondition}
+          options={CONDITION_OPTIONS}
+          onChange={(v) => onChange({ surfaceCondition: v as 'new' | 'painted' | 'renovation' })}
+        />
+
+        <Select
+          label="Anzahl Anstriche"
+          name="coats"
+          value={String(state.coats)}
+          options={COATS_OPTIONS}
+          onChange={(v) => onChange({ coats: Number(v) as 1 | 2 })}
+        />
       </div>
 
       <div className="flex justify-between">

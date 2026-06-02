@@ -11,6 +11,8 @@ const INITIAL_STATE: WizardState = {
   floorCount: null,
   cleaningInterval: null,
   dirtLevel: 'normal',
+  surfaceCondition: 'painted',
+  coats: 1,
   selectedExtras: [],
   contactName: '',
   contactEmail: '',

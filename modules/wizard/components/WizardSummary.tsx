@@ -9,6 +9,12 @@ interface WizardSummaryProps {
   estimate: PriceEstimate
 }
 
+const CONDITION_LABELS: Record<WizardState['surfaceCondition'], string> = {
+  new: 'Neu verputzt',
+  painted: 'Bereits gestrichen',
+  renovation: 'Renovierungsbedürftig',
+}
+
 export default function WizardSummary({ state, estimate }: WizardSummaryProps) {
   const service = SERVICES.find((s) => s.id === state.selectedServiceId)
   const extraServices = SERVICES.filter((s) => state.selectedExtras.includes(s.id))
@@ -35,6 +41,16 @@ export default function WizardSummary({ state, estimate }: WizardSummaryProps) {
             <span>{state.areaM2} m²</span>
           </div>
         )}
+
+        <div className="flex justify-between text-gray-500">
+          <span>Anstriche</span>
+          <span>{state.coats === 2 ? 'Zwei Anstriche' : 'Ein Anstrich'}</span>
+        </div>
+
+        <div className="flex justify-between text-gray-500">
+          <span>Untergrund</span>
+          <span>{CONDITION_LABELS[state.surfaceCondition]}</span>
+        </div>
 
         {extraServices.length > 0 && (
           <div className="border-t border-gray-100 pt-3">

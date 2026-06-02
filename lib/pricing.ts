@@ -1,6 +1,18 @@
 import type { WizardState, PriceEstimate } from '@/lib/types/wizard'
 import { SERVICES } from '@/lib/company-config'
 
+// Aufschlag je nach Zustand des Untergrunds
+const CONDITION_FACTOR: Record<WizardState['surfaceCondition'], number> = {
+  new: 1.0,        // neu verputzt
+  painted: 1.0,    // bereits gestrichen
+  renovation: 1.25 // renovierungsbedürftig – mehr Vorarbeit
+}
+
+// Zwei Anstriche = mehr Arbeit
+function coatsFactor(coats: number): number {
+  return coats === 2 ? 1.7 : 1.0
+}
+
 export function calculateEstimate(state: WizardState): PriceEstimate {
   if (!state.selectedServiceId) {
     return { base: 0, extras: 0, total: 0, currency: 'EUR' }
@@ -19,6 +31,9 @@ export function calculateEstimate(state: WizardState): PriceEstimate {
   } else {
     base = service.price_per_unit
   }
+
+  // Maler-Faktoren anwenden
+  base = base * CONDITION_FACTOR[state.surfaceCondition] * coatsFactor(state.coats)
 
   let extras = 0
   for (const extraId of state.selectedExtras) {
