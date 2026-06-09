@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Table } from '@/components/ui'
+import { supabase } from '@/lib/supabaseClient'
 import type { RequestWithCustomer, RequestStatus } from '@/lib/types/database'
 import { COMPANY_CONFIG } from '@/lib/company-config'
 
@@ -158,6 +159,32 @@ export default function RequestsTable() {
           )}
         </div>
       ),
+    },
+    {
+      key: 'fotos',
+      header: 'Fotos',
+      render: (r: RequestWithCustomer) => {
+        const pfade = r.foto_pfade ?? []
+        if (pfade.length === 0) {
+          return <span className="text-xs text-gray-300">—</span>
+        }
+        return (
+          <div className="flex max-w-[130px] flex-wrap gap-1">
+            {pfade.map((pfad) => {
+              const url = supabase.storage.from('anfrage-fotos').getPublicUrl(pfad).data.publicUrl
+              return (
+                <a key={pfad} href={url} target="_blank" rel="noopener noreferrer">
+                  <img
+                    src={url}
+                    alt="Kundenfoto"
+                    className="h-12 w-12 rounded-md border border-gray-200 object-cover transition-opacity hover:opacity-80"
+                  />
+                </a>
+              )
+            })}
+          </div>
+        )
+      },
     },
     {
       key: 'price',

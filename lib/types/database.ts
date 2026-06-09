@@ -49,6 +49,7 @@ export interface ServiceRequest {
   status: RequestStatus
   notes: string | null
   created_at: string
+  foto_pfade: string[] | null
 }
 
 /** API response type for /api/get-requests (includes joined customer) */
