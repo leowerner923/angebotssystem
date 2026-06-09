@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { SERVICES } from '@/lib/company-config'
 import { Button, Input, Select } from '@/components/ui'
+import FotoUpload from './FotoUpload'
 import type { WizardStepProps } from '@/lib/types/wizard'
 
 const CONDITION_OPTIONS = [
@@ -112,6 +113,8 @@ export default function WizardStep2({ state, onChange, onNext, onBack }: WizardS
           options={COATS_OPTIONS}
           onChange={(v) => onChange({ coats: Number(v) as 1 | 2 })}
         />
+
+        <FotoUpload onPfadeChange={(pfade) => onChange({ photoPaths: pfade })} />
       </div>
 
       <div className="flex justify-between">

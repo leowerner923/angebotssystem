@@ -13,6 +13,8 @@ export interface WizardState {
   // Maler-spezifisch
   surfaceCondition: 'new' | 'painted' | 'renovation'
   coats: 1 | 2
+  // Fotos
+  photoPaths: string[]
   // Step 3
   selectedExtras: string[]
   // Step 4

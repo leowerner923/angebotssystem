@@ -13,6 +13,7 @@ const INITIAL_STATE: WizardState = {
   dirtLevel: 'normal',
   surfaceCondition: 'painted',
   coats: 1,
+  photoPaths: [],
   selectedExtras: [],
   contactName: '',
   contactEmail: '',

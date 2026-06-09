@@ -50,6 +50,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         floor_count: wizardState.floorCount,
         cleaning_interval: wizardState.cleaningInterval ?? 'once',
         dirt_level: wizardState.dirtLevel ?? 'normal',
+        foto_pfade: wizardState.photoPaths ?? [],
         price: 0,
         status: 'new',
       })
