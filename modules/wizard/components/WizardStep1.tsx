@@ -11,7 +11,7 @@ export default function WizardStep1({ state, onChange, onNext }: WizardStepProps
     <div className="flex flex-col gap-6">
       <div>
         <h2 className="text-lg font-semibold text-gray-900">Welche Leistung benötigen Sie?</h2>
-        <p className="mt-1 text-sm text-gray-500">Wählen Sie die passende Reinigungsart aus.</p>
+        <p className="mt-1 text-sm text-gray-500">Wählen Sie die passende Leistung aus.</p>
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
