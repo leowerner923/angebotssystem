@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
 
     await supabaseServer
       .from('offers')
-      .update({ status: 'sent', gueltig_bis: gueltigBisIso })
+      .update({ status: 'sent', gueltig_bis: gueltigBisIso, versendet_am: new Date().toISOString() })
       .eq('id', offer_id)
 
     return NextResponse.json({ success: true })

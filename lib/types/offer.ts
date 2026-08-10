@@ -16,6 +16,9 @@ export interface Offer {
   annahme_token: string
   entschieden_am: string | null
   gueltig_bis: string | null
+  versendet_am: string | null
+  follow_up_anzahl: number
+  follow_up_zuletzt_am: string | null
 }
 
 /** API response type for /api/get-offers (includes joined customer) */

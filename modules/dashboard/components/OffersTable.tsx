@@ -173,6 +173,11 @@ export default function OffersTable() {
           {o.status === 'sent' && (
             <span className="text-[11px] text-gray-400">Kunde kann online entscheiden</span>
           )}
+          {o.status === 'sent' && o.follow_up_anzahl > 0 && o.follow_up_zuletzt_am && (
+            <span className="text-[11px] text-amber-600">
+              {o.follow_up_anzahl}. Nachfrage am {formatDate(o.follow_up_zuletzt_am)}
+            </span>
+          )}
         </div>
       ),
     },
