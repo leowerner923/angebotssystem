@@ -151,19 +151,27 @@ export default function OffersTable() {
       key: 'status',
       header: 'Status',
       render: (o: OfferWithCustomer) => (
-        <div className="flex items-center gap-2">
-          <select
-            value={o.status}
-            disabled={updating === o.id}
-            onChange={(e) => handleStatusChange(o.id, e.target.value as OfferStatus)}
-            className={`rounded px-2 py-1 text-xs ${STATUS_COLORS[o.status]}`}
-          >
-            {(Object.keys(STATUS_LABELS) as OfferStatus[]).map((s) => (
-              <option key={s} value={s}>{STATUS_LABELS[s]}</option>
-            ))}
-          </select>
-          {updating === o.id && (
-            <span className="text-xs text-gray-400">...</span>
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2">
+            <select
+              value={o.status}
+              disabled={updating === o.id}
+              onChange={(e) => handleStatusChange(o.id, e.target.value as OfferStatus)}
+              className={`rounded px-2 py-1 text-xs ${STATUS_COLORS[o.status]}`}
+            >
+              {(Object.keys(STATUS_LABELS) as OfferStatus[]).map((s) => (
+                <option key={s} value={s}>{STATUS_LABELS[s]}</option>
+              ))}
+            </select>
+            {updating === o.id && (
+              <span className="text-xs text-gray-400">...</span>
+            )}
+          </div>
+          {(o.status === 'accepted' || o.status === 'rejected') && o.entschieden_am && (
+            <span className="text-[11px] text-gray-400">am {formatDate(o.entschieden_am)}</span>
+          )}
+          {o.status === 'sent' && (
+            <span className="text-[11px] text-gray-400">Kunde kann online entscheiden</span>
           )}
         </div>
       ),
@@ -200,6 +208,16 @@ export default function OffersTable() {
             >
               {updating === o.id ? '...' : 'Senden'}
             </button>
+          )}
+          {(o.status === 'sent' || o.status === 'accepted' || o.status === 'rejected') && (
+            <a
+              href={`/angebot/${o.annahme_token}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-gray-500 hover:underline"
+            >
+              Kundenansicht öffnen
+            </a>
           )}
           <button
             onClick={() => handleDelete(o.id)}

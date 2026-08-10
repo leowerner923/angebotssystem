@@ -5,6 +5,7 @@ export const COMPANY_CONFIG = {
   id: 'farbwerk-maler',
   name: 'Farbwerk Malermeister',
   location: 'Mosbach & Umgebung',
+  email: 'leowerner923@gmail.com',
   primaryColor: '#1d4ed8',
   targetGroups: ['Privatkunden', 'Hausverwaltungen', 'Gewerbe', 'Neubau'],
 } as const

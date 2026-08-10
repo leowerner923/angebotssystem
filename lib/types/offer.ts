@@ -13,6 +13,9 @@ export interface Offer {
   status: OfferStatus
   pdf_url: string | null
   created_at: string
+  annahme_token: string
+  entschieden_am: string | null
+  gueltig_bis: string | null
 }
 
 /** API response type for /api/get-offers (includes joined customer) */
