@@ -37,6 +37,8 @@ export default function RequestsTable() {
   const [noteValues, setNoteValues] = useState<Record<string, string>>({})
   const [savingNote, setSavingNote] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [analyzing, setAnalyzing] = useState<Record<string, boolean>>({})
+  const [analyzeError, setAnalyzeError] = useState<Record<string, string>>({})
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -106,6 +108,28 @@ export default function RequestsTable() {
       setRequests((prev) => prev.filter((r) => r.id !== id))
     } finally {
       setDeleting(null)
+    }
+  }
+
+  async function handleAnalyzePhotos(id: string) {
+    setAnalyzing((prev) => ({ ...prev, [id]: true }))
+    setAnalyzeError((prev) => ({ ...prev, [id]: '' }))
+    try {
+      const res = await fetch('/api/analyze-photos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ requestId: id }),
+      })
+      const json = await res.json()
+      if (!res.ok) {
+        setAnalyzeError((prev) => ({ ...prev, [id]: json.error ?? 'Analyse fehlgeschlagen.' }))
+        return
+      }
+      setRequests((prev) => prev.map((r) => (r.id === id ? { ...r, foto_analyse: json.foto_analyse } : r)))
+    } catch {
+      setAnalyzeError((prev) => ({ ...prev, [id]: 'Netzwerkfehler bei der Foto-Analyse.' }))
+    } finally {
+      setAnalyzing((prev) => ({ ...prev, [id]: false }))
     }
   }
 
@@ -182,6 +206,86 @@ export default function RequestsTable() {
                 </a>
               )
             })}
+          </div>
+        )
+      },
+    },
+    {
+      key: 'foto_analyse',
+      header: 'KI-Analyse',
+      render: (r: RequestWithCustomer) => {
+        const pfade = r.foto_pfade ?? []
+        if (pfade.length === 0) {
+          return <span className="text-xs text-gray-300">—</span>
+        }
+
+        const analyse = r.foto_analyse
+        const laeuft = analyzing[r.id]
+        const fehler = analyzeError[r.id]
+        const sicherheitColors: Record<string, string> = {
+          hoch: 'bg-green-100 text-green-700',
+          mittel: 'bg-yellow-100 text-yellow-700',
+          niedrig: 'bg-gray-100 text-gray-500',
+        }
+        const flaecheWeicht =
+          analyse?.flaeche_geschaetzt_m2 != null &&
+          !!r.square_meters &&
+          Math.abs(analyse.flaeche_geschaetzt_m2 - r.square_meters) / r.square_meters > 0.25
+
+        return (
+          <div className="flex min-w-[220px] flex-col gap-2">
+            {analyse && (
+              <div
+                className={`rounded-lg border p-2 text-xs ${
+                  flaecheWeicht ? 'border-orange-300 bg-orange-50' : 'border-gray-200 bg-gray-50'
+                }`}
+              >
+                <div className="mb-1 flex items-center justify-between gap-2">
+                  <span className="font-medium text-gray-700">KI-Einschätzung — bitte prüfen</span>
+                  <span
+                    className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${
+                      sicherheitColors[analyse.sicherheit] ?? sicherheitColors.niedrig
+                    }`}
+                  >
+                    {analyse.sicherheit}
+                  </span>
+                </div>
+                <p className="text-[11px] text-gray-400">ersetzt kein Aufmaß</p>
+                <dl className="mt-1.5 space-y-0.5 text-gray-600">
+                  <div>
+                    <span className="font-medium">Fläche:</span>{' '}
+                    {analyse.flaeche_geschaetzt_m2 != null ? `${analyse.flaeche_geschaetzt_m2} m²` : 'unbekannt'}
+                    {flaecheWeicht && (
+                      <span className="ml-1 font-medium text-orange-600">weicht &gt;25 % ab</span>
+                    )}
+                  </div>
+                  {analyse.untergrund && (
+                    <div>
+                      <span className="font-medium">Untergrund:</span> {analyse.untergrund}
+                    </div>
+                  )}
+                  {analyse.vorarbeiten.length > 0 && (
+                    <div>
+                      <span className="font-medium">Vorarbeiten:</span> {analyse.vorarbeiten.join(', ')}
+                    </div>
+                  )}
+                  {analyse.auffaelligkeiten.length > 0 && (
+                    <div>
+                      <span className="font-medium">Auffälligkeiten:</span> {analyse.auffaelligkeiten.join(', ')}
+                    </div>
+                  )}
+                  {analyse.hinweis && <div className="italic text-gray-500">{analyse.hinweis}</div>}
+                </dl>
+              </div>
+            )}
+            {fehler && <p className="text-[11px] text-red-500">{fehler}</p>}
+            <button
+              onClick={() => handleAnalyzePhotos(r.id)}
+              disabled={laeuft}
+              className="self-start whitespace-nowrap rounded-lg border border-gray-300 px-2.5 py-1 text-xs font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50"
+            >
+              {laeuft ? 'Analysiert…' : analyse ? 'Neu analysieren' : 'Fotos analysieren'}
+            </button>
           </div>
         )
       },

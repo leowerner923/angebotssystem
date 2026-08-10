@@ -18,6 +18,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       notes,
       created_at,
       foto_pfade,
+      foto_analyse,
       customers (
         id,
         name,

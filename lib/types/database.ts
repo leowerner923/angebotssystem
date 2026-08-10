@@ -39,6 +39,16 @@ export interface RequestDetails {
 
 export type RequestStatus = 'new' | 'contacted' | 'closed'
 
+export interface FotoAnalyse {
+  flaeche_geschaetzt_m2: number | null
+  untergrund: string | null
+  vorarbeiten: string[]
+  auffaelligkeiten: string[]
+  sicherheit: 'hoch' | 'mittel' | 'niedrig'
+  hinweis: string
+  erstellt_am: string
+}
+
 export interface ServiceRequest {
   id: string
   company_id: string
@@ -50,6 +60,7 @@ export interface ServiceRequest {
   notes: string | null
   created_at: string
   foto_pfade: string[] | null
+  foto_analyse: FotoAnalyse | null
 }
 
 /** API response type for /api/get-requests (includes joined customer) */
