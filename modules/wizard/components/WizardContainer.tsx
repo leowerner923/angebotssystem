@@ -18,18 +18,26 @@ export default function WizardContainer() {
   const { state, updateState, nextStep, prevStep, reset } = useWizardState()
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   const estimate = calculateEstimate(state)
 
   async function handleSubmit() {
     setLoading(true)
+    setSubmitError(null)
     try {
-      await fetch('/api/create-request', {
+      const res = await fetch('/api/create-request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ company_id: COMPANY_CONFIG.id, wizardState: state }),
       })
+      if (!res.ok) {
+        setSubmitError('Ihre Anfrage konnte nicht gesendet werden. Bitte versuchen Sie es erneut.')
+        return
+      }
       setSubmitted(true)
+    } catch {
+      setSubmitError('Netzwerkfehler. Bitte versuchen Sie es erneut.')
     } finally {
       setLoading(false)
     }
@@ -54,6 +62,10 @@ export default function WizardContainer() {
   return (
     <div className="flex flex-col gap-6">
       <ProgressBar currentStep={state.currentStep} totalSteps={4} stepLabels={STEP_LABELS} />
+
+      {submitError && (
+        <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{submitError}</p>
+      )}
 
       <div className="flex flex-col gap-6 lg:flex-row">
         <div className="flex-1">

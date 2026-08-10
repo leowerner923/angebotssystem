@@ -1,10 +1,74 @@
 'use client'
 
 import { useState } from 'react'
-import { supabase } from '@/lib/supabaseClient'
 
 const MAX_DATEIEN = 5
 const MAX_GROESSE = 5 * 1024 * 1024 // 5 MB
+
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+
+// Direkter fetch() statt supabase-js storage.upload(): Letzteres wird in
+// manchen mobilen Browsern von einer RLS-Policy blockiert, ein roher Request
+// mit identischen Headern/Auth geht zuverlässig durch.
+async function uploadFoto(pfad: string, datei: File): Promise<{ error: string | null }> {
+  const res = await fetch(`${SUPABASE_URL}/storage/v1/object/anfrage-fotos/${pfad}`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+      apikey: SUPABASE_ANON_KEY,
+      'Content-Type': datei.type || 'application/octet-stream',
+      'x-upsert': 'false',
+    },
+    body: datei,
+  })
+  if (!res.ok) {
+    const text = await res.text().catch(() => '')
+    return { error: text || `HTTP ${res.status}` }
+  }
+  return { error: null }
+}
+
+// crypto.randomUUID() ist nur in secure contexts (https/localhost) verfügbar
+function erzeugeOrdnerId(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID()
+  }
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
+}
+
+const UPLOAD_TIMEOUT_MS = 45000
+const MAX_VERSUCHE = 3
+
+function mitTimeout<T>(promise: PromiseLike<T>, ms: number): Promise<T> {
+  return Promise.race([
+    Promise.resolve(promise),
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error('TIMEOUT')), ms)
+    ),
+  ])
+}
+
+function warte(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+// Mobile Verbindungen sind manchmal kurz weg (z.B. Funkloch, Netzwechsel) -
+// ein sofortiger Retry behebt das meistens, ohne den Nutzer zu stören.
+async function uploadMitRetry(pfad: string, datei: File): Promise<{ error: string | null }> {
+  let letzterFehler: string | null = null
+  for (let versuch = 1; versuch <= MAX_VERSUCHE; versuch++) {
+    try {
+      const { error } = await mitTimeout(uploadFoto(pfad, datei), UPLOAD_TIMEOUT_MS)
+      if (!error) return { error: null }
+      letzterFehler = error
+    } catch (err) {
+      letzterFehler = err instanceof Error && err.message === 'TIMEOUT' ? 'TIMEOUT' : String(err)
+    }
+    if (versuch < MAX_VERSUCHE) await warte(1000)
+  }
+  return { error: letzterFehler }
+}
 
 export default function FotoUpload({
   onPfadeChange,
@@ -31,25 +95,29 @@ export default function FotoUpload({
     setLaedt(true)
     const pfade: string[] = []
     const vorschauUrls: string[] = []
-    const ordner = crypto.randomUUID()
+    const ordner = erzeugeOrdnerId()
 
-    for (const d of dateien) {
-      const pfad = `${ordner}/${Date.now()}-${d.name}`
-      const { error } = await supabase.storage
-        .from('anfrage-fotos')
-        .upload(pfad, d, { cacheControl: '3600', upsert: false })
-      if (error) {
-        setFehler('Upload fehlgeschlagen, bitte erneut versuchen.')
-        setLaedt(false)
-        return
+    try {
+      for (const d of dateien) {
+        const pfad = `${ordner}/${Date.now()}-${d.name}`
+        const { error } = await uploadMitRetry(pfad, d)
+        if (error) {
+          setFehler(
+            error === 'TIMEOUT'
+              ? 'Upload dauert zu lange. Bitte Verbindung prüfen und erneut versuchen.'
+              : `Upload fehlgeschlagen: ${error}`
+          )
+          return
+        }
+        pfade.push(pfad)
+        vorschauUrls.push(URL.createObjectURL(d))
       }
-      pfade.push(pfad)
-      vorschauUrls.push(URL.createObjectURL(d))
-    }
 
-    setVorschau(vorschauUrls)
-    onPfadeChange(pfade)
-    setLaedt(false)
+      setVorschau(vorschauUrls)
+      onPfadeChange(pfade)
+    } finally {
+      setLaedt(false)
+    }
   }
 
   return (

@@ -78,7 +78,7 @@ export default function DashboardStats() {
 
   if (loading) {
     return (
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 12, marginTop: 24 }}>
+      <div className="grid grid-cols-2 sm:grid-cols-4" style={{ gap: 12, marginTop: 24 }}>
         {[1, 2, 3, 4].map((i) => (
           <div key={i} className="h-28 animate-pulse rounded-2xl bg-gray-100" />
         ))}
@@ -92,7 +92,7 @@ export default function DashboardStats() {
     <div style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 12 }}>
 
       {/* KPI Karten */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 12 }}>
+      <div className="grid grid-cols-2 sm:grid-cols-4" style={{ gap: 12 }}>
         <StatCard label="Offene Anfragen" value={offeneAnfragen} badge={<Badge color="amber" label="Warten auf Angebot" />} />
         <StatCard label="Angebote versendet" value={angeboteSent} badge={<Badge color="blue" label="Beim Kunden" />} />
         <StatCard label="Angenommen" value={angeboteAccepted} badge={<Badge color="green" label={`${konversionsrate}% Konversionsrate`} />} />
