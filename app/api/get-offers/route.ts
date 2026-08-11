@@ -8,7 +8,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   const { data, error } = await supabaseServer
     .from('offers')
     .select(
-      'id, company_id, request_id, customer_id, title, description, price, status, created_at, pdf_url, annahme_token, entschieden_am, gueltig_bis, versendet_am, follow_up_anzahl, follow_up_zuletzt_am, customers(id, name, email, phone, company)',
+      'id, company_id, request_id, customer_id, title, description, price, status, created_at, pdf_url, annahme_token, entschieden_am, gueltig_bis, versendet_am, follow_up_anzahl, follow_up_zuletzt_am, auftrag_abgeschlossen_am, bewertung_gesendet_am, customers(id, name, email, phone, company)',
     )
     .eq('company_id', company_id)
     .order('created_at', { ascending: false })

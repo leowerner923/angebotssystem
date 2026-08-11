@@ -19,6 +19,8 @@ export interface Offer {
   versendet_am: string | null
   follow_up_anzahl: number
   follow_up_zuletzt_am: string | null
+  auftrag_abgeschlossen_am: string | null
+  bewertung_gesendet_am: string | null
 }
 
 /** API response type for /api/get-offers (includes joined customer) */

@@ -39,6 +39,14 @@ export default function OffersTable() {
   const [updating, setUpdating] = useState<string | null>(null)
   const [deleting, setDeleting] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [bewertungAktiv, setBewertungAktiv] = useState(false)
+
+  useEffect(() => {
+    fetch(`/api/company-settings?company_id=${COMPANY_CONFIG.id}`)
+      .then((r) => r.json())
+      .then((json) => setBewertungAktiv(json.bewertung_aktiv ?? false))
+      .catch(() => setBewertungAktiv(false))
+  }, [])
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -115,6 +123,25 @@ export default function OffersTable() {
     window.open(`/api/get-offer-pdf?id=${id}`, '_blank')
   }
 
+  async function handleCompleteOrder(id: string, abgeschlossen: boolean) {
+    setUpdating(id)
+    try {
+      const res = await fetch('/api/complete-order', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, abgeschlossen }),
+      })
+      const json = await res.json()
+      if (res.ok) {
+        setOffers((prev) =>
+          prev.map((o) => (o.id === id ? { ...o, auftrag_abgeschlossen_am: json.auftrag_abgeschlossen_am } : o))
+        )
+      }
+    } finally {
+      setUpdating(null)
+    }
+  }
+
   const columns = [
     {
       key: 'customer',
@@ -170,6 +197,19 @@ export default function OffersTable() {
           {(o.status === 'accepted' || o.status === 'rejected') && o.entschieden_am && (
             <span className="text-[11px] text-gray-400">am {formatDate(o.entschieden_am)}</span>
           )}
+          {o.status === 'accepted' && o.auftrag_abgeschlossen_am && (
+            <span className="text-[11px] text-green-600">
+              Abgeschlossen am {formatDate(o.auftrag_abgeschlossen_am)}
+            </span>
+          )}
+          {o.status === 'accepted' && o.auftrag_abgeschlossen_am && o.bewertung_gesendet_am && (
+            <span className="text-[11px] text-blue-600">
+              Bewertungsbitte gesendet am {formatDate(o.bewertung_gesendet_am)}
+            </span>
+          )}
+          {o.status === 'accepted' && o.auftrag_abgeschlossen_am && !o.bewertung_gesendet_am && bewertungAktiv && (
+            <span className="text-[11px] text-gray-400">Bewertungsbitte geplant</span>
+          )}
           {o.status === 'sent' && (
             <span className="text-[11px] text-gray-400">Kunde kann online entscheiden</span>
           )}
@@ -223,6 +263,24 @@ export default function OffersTable() {
             >
               Kundenansicht öffnen
             </a>
+          )}
+          {o.status === 'accepted' && !o.auftrag_abgeschlossen_am && (
+            <button
+              onClick={() => handleCompleteOrder(o.id, true)}
+              disabled={updating === o.id}
+              className="text-xs bg-gray-800 text-white px-2 py-1 rounded hover:bg-gray-900 disabled:opacity-50"
+            >
+              {updating === o.id ? '...' : 'Auftrag abgeschlossen'}
+            </button>
+          )}
+          {o.status === 'accepted' && o.auftrag_abgeschlossen_am && (
+            <button
+              onClick={() => handleCompleteOrder(o.id, false)}
+              disabled={updating === o.id}
+              className="text-xs text-gray-400 hover:text-gray-600 hover:underline disabled:opacity-50"
+            >
+              Rückgängig machen
+            </button>
           )}
           <button
             onClick={() => handleDelete(o.id)}
