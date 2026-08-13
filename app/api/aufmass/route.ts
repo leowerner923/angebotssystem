@@ -156,7 +156,7 @@ export async function POST(req: NextRequest) {
 
     if (countError) {
       console.error('AUFMASS COUNT ERROR:', countError)
-      return NextResponse.json({ error: 'Server error' }, { status: 500 })
+      return NextResponse.json({ error: `Server error (Tageslimit-Check): ${countError.message}` }, { status: 500 })
     }
     if ((count ?? 0) >= MAX_AUSWERTUNGEN_PRO_TAG) {
       return NextResponse.json(
@@ -208,6 +208,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, aufmass })
   } catch (err) {
     console.error('AUFMASS ERROR:', err)
-    return NextResponse.json({ error: 'Server error' }, { status: 500 })
+    const detail = err instanceof Error ? err.message : String(err)
+    return NextResponse.json({ error: `Server error: ${detail}` }, { status: 500 })
   }
 }
