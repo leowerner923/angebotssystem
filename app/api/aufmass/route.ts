@@ -199,7 +199,10 @@ export async function POST(req: NextRequest) {
 
     if (insertError || !aufmass) {
       console.error('AUFMASS INSERT ERROR:', insertError)
-      return NextResponse.json({ error: 'Ergebnis konnte nicht gespeichert werden.' }, { status: 500 })
+      return NextResponse.json(
+        { error: `Ergebnis konnte nicht gespeichert werden: ${insertError?.message ?? 'unbekannter Fehler'}` },
+        { status: 500 }
+      )
     }
 
     return NextResponse.json({ success: true, aufmass })
