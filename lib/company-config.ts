@@ -15,9 +15,11 @@ export const COMPANY_CONFIG = {
   slogan: 'Saubere Arbeit, faire Preise – seit über 15 Jahren in der Region.',
   ueberUns:
     'Wir sind ein familiengeführter Malerbetrieb aus Mosbach. Ob Innenanstrich, Fassade oder Tapezierarbeiten – wir arbeiten sauber, zuverlässig und zum vorher vereinbarten Festpreis. Persönliche Beratung ist uns wichtiger als der schnelle Abschluss.',
-  telefon: '+49 6261 123456',
+  // Offizielle "Drama-Nummer" der Bundesnetzagentur (Block 0171 39200 00–99,
+  // reserviert für Medien-/Demozwecke, garantiert nie an echte Kunden vergeben)
+  telefon: '+49 171 3920001',
   // Für wa.me: Landesvorwahl + Nummer, ohne "+" und ohne Leerzeichen
-  whatsapp: '491701234567',
+  whatsapp: '491713920001',
   adresse: 'Hauptstraße 12, 74821 Mosbach',
   einzugsgebiet: 'Mosbach und 50 km Umkreis',
   // logoUrl: '/logo.png' — public/logo.png ist ein Relikt einer früheren
