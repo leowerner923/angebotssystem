@@ -64,14 +64,8 @@ export default function HomePage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       {/* Header */}
-      <header className="flex items-center justify-between border-b border-gray-100 bg-white px-6 py-4 shadow-sm">
+      <header className="border-b border-gray-100 bg-white px-6 py-4 shadow-sm">
         <span className="text-lg font-bold text-gray-900">{c.name}</span>
-        <Link
-          href="/dashboard"
-          className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900"
-        >
-          Anmelden
-        </Link>
       </header>
 
       {/* Kopfbereich */}
@@ -149,13 +143,24 @@ export default function HomePage() {
       )}
 
       {/* Kontakt */}
-      {(c.telefon || c.email || c.adresse) && (
+      {(c.telefon || c.whatsapp || c.email || c.adresse) && (
         <section className="px-6 py-16 text-center">
           <h2 className="text-2xl font-bold text-gray-900">Kontakt</h2>
           <div className="mt-6 flex flex-col items-center gap-2 text-lg">
             {c.telefon && (
               <a href={`tel:${c.telefon.replace(/\s+/g, '')}`} className="font-medium hover:underline" style={{ color: c.primaryColor }}>
                 {c.telefon}
+              </a>
+            )}
+            {c.whatsapp && (
+              <a
+                href={`https://wa.me/${c.whatsapp}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium hover:underline"
+                style={{ color: c.primaryColor }}
+              >
+                WhatsApp
               </a>
             )}
             {c.email && (
