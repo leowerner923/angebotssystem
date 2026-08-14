@@ -1,94 +1,71 @@
-'use client'
-
+import type { Metadata } from 'next'
 import Link from 'next/link'
-import { useState } from 'react'
-import { COMPANY_CONFIG } from '@/lib/company-config'
+import { COMPANY_CONFIG, TRUST_ITEMS, SERVICES } from '@/lib/company-config'
+import LegalModals from './LegalModals'
 
-const TRUST_ITEMS = [
-  {
-    title: 'Schnelle Antwort',
-    text: 'Angebot innerhalb von 24 Stunden – ohne langes Warten.',
-    icon: (
-      <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-      </svg>
-    ),
+const c = COMPANY_CONFIG
+const beschreibung = `${c.name} – ${c.slogan ?? 'Professionelle Malerarbeiten'}${
+  c.einzugsgebiet ? ` · ${c.einzugsgebiet}` : ''
+}`
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
+
+export const metadata: Metadata = {
+  title: `${c.name} – Malerbetrieb in ${c.location}`,
+  description: beschreibung,
+  openGraph: {
+    title: c.name,
+    description: beschreibung,
+    type: 'website',
+    locale: 'de_DE',
+    ...(siteUrl && { url: siteUrl }),
+    ...(c.logoUrl && { images: [{ url: c.logoUrl }] }),
   },
-  {
-    title: 'Regionale Experten',
-    text: `Spezialisiert auf ${COMPANY_CONFIG.location}. Wir kennen die Region.`,
-    icon: (
-      <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
-      </svg>
-    ),
-  },
-  {
-    title: 'Keine Vertragsbindung',
-    text: 'Unverbindliches Angebot. Sie entscheiden, wann und ob.',
-    icon: (
-      <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-      </svg>
-    ),
-  },
+}
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'LocalBusiness',
+  name: c.name,
+  ...(c.telefon && { telephone: c.telefon }),
+  ...(c.email && { email: c.email }),
+  ...(c.adresse && { address: { '@type': 'PostalAddress', streetAddress: c.adresse } }),
+  ...(c.einzugsgebiet && { areaServed: c.einzugsgebiet }),
+  ...(siteUrl && { url: siteUrl }),
+}
+
+const TRUST_ICONS = [
+  <svg key="uhr" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+  </svg>,
+  <svg key="pin" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+  </svg>,
+  <svg key="haken" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+  </svg>,
 ]
 
-function Modal({ title, children, onClose }: { title: string; children: React.ReactNode; onClose: () => void }) {
+function CtaButton({ children }: { children: React.ReactNode }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-      <div className="relative max-h-[80vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-8 shadow-xl">
-        <button
-          onClick={onClose}
-          className="absolute right-4 top-4 text-gray-400 hover:text-gray-600"
-        >
-          ✕
-        </button>
-        <h2 className="mb-6 text-xl font-bold text-gray-900">{title}</h2>
-        <div className="text-sm leading-relaxed text-gray-600">{children}</div>
-      </div>
-    </div>
+    <Link
+      href="/rechner"
+      className="inline-block rounded-xl px-8 py-4 text-lg font-semibold text-white shadow-md transition-all hover:opacity-90 hover:shadow-lg"
+      style={{ backgroundColor: COMPANY_CONFIG.primaryColor }}
+    >
+      {children}
+    </Link>
   )
 }
 
 export default function HomePage() {
-  const [modal, setModal] = useState<'impressum' | 'datenschutz' | null>(null)
-
   return (
     <main className="flex min-h-screen flex-col bg-white">
-      {modal === 'impressum' && (
-        <Modal title="Impressum" onClose={() => setModal(null)}>
-          <p className="font-semibold">Angaben gemäß § 5 TMG</p>
-          <p className="mt-2">Leonard Werner<br />Odenwaldstraße 3<br />74850 Schefflenz</p>
-          <p className="mt-4 font-semibold">Kontakt</p>
-          <p className="mt-2">E-Mail: leowerner923@gmail.com</p>
-          <p className="mt-4 text-gray-400 text-xs">Diese Website befindet sich derzeit in der Entwicklungsphase und wird gewerblich noch nicht betrieben.</p>
-        </Modal>
-      )}
-
-      {modal === 'datenschutz' && (
-        <Modal title="Datenschutzerklärung" onClose={() => setModal(null)}>
-          <p className="font-semibold">1. Verantwortlicher</p>
-          <p className="mt-2">Leonard Werner, Odenwaldstraße 3, 74850 Schefflenz<br />E-Mail: leowerner923@gmail.com</p>
-          <p className="mt-4 font-semibold">2. Welche Daten wir erheben</p>
-          <p className="mt-2">Wenn Sie unser Anfrageformular nutzen, erheben wir: Name, E-Mail-Adresse, Telefonnummer, Standort sowie Angaben zur gewünschten Leistung.</p>
-          <p className="mt-4 font-semibold">3. Zweck der Datenverarbeitung</p>
-          <p className="mt-2">Die Daten werden ausschließlich zur Erstellung und Übermittlung eines unverbindlichen Angebots verwendet.</p>
-          <p className="mt-4 font-semibold">4. Speicherung</p>
-          <p className="mt-2">Ihre Daten werden auf Servern von Supabase (supabase.com) gespeichert. Supabase ist DSGVO-konform und speichert Daten in der EU.</p>
-          <p className="mt-4 font-semibold">5. Weitergabe an Dritte</p>
-          <p className="mt-2">Ihre Daten werden nicht an Dritte weitergegeben, außer an den jeweiligen Handwerksbetrieb zur Angebotserstellung.</p>
-          <p className="mt-4 font-semibold">6. Ihre Rechte</p>
-          <p className="mt-2">Sie haben das Recht auf Auskunft, Berichtigung und Löschung Ihrer Daten. Kontaktieren Sie uns per E-Mail.</p>
-          <p className="mt-4 font-semibold">7. Hosting & Dienste</p>
-          <p className="mt-2">Hosting: Vercel (vercel.com) · E-Mail-Versand: Resend (resend.com)</p>
-        </Modal>
-      )}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       {/* Header */}
       <header className="flex items-center justify-between border-b border-gray-100 bg-white px-6 py-4 shadow-sm">
-        <span className="text-lg font-bold text-gray-900">{COMPANY_CONFIG.name}</span>
+        <span className="text-lg font-bold text-gray-900">{c.name}</span>
         <Link
           href="/dashboard"
           className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900"
@@ -97,78 +74,109 @@ export default function HomePage() {
         </Link>
       </header>
 
-      {/* Hero */}
-      <section className="flex flex-1 flex-col items-center justify-center px-6 py-24 text-center">
-        <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-4 py-1.5 text-sm font-medium text-blue-700">
-          <span className="h-2 w-2 rounded-full bg-blue-500" />
-          Professionelle Malerarbeiten · {COMPANY_CONFIG.location}
+      {/* Kopfbereich */}
+      <section className="flex flex-col items-center px-6 py-16 text-center sm:py-24">
+        {c.logoUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={c.logoUrl} alt={c.name} className="mb-6 h-16 w-auto object-contain sm:h-20" />
+        )}
+
+        <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-5xl">{c.name}</h1>
+
+        {c.slogan && (
+          <p className="mt-4 max-w-xl text-lg leading-relaxed text-gray-500 sm:text-xl">{c.slogan}</p>
+        )}
+
+        <div className="mt-10 flex flex-col items-center gap-3">
+          <CtaButton>Angebot berechnen →</CtaButton>
+          <span className="text-sm text-gray-400">Kostenlos · Unverbindlich · In 2 Minuten</span>
         </div>
 
-        <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
-          Malerangebot
-          <br className="hidden sm:block" />
-          <span style={{ color: 'var(--brand-primary)' }}> in 2 Minuten</span>
-        </h1>
-
-        <p className="mt-6 max-w-lg text-lg leading-relaxed text-gray-500">
-          Fläche angeben, Anfrage senden – ohne Telefonieren.
-          Wir melden uns innerhalb von 24 Stunden bei Ihnen.
-        </p>
-
-        <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row">
-          <Link
-            href="/rechner"
-            className="rounded-xl px-8 py-4 text-base font-semibold text-white shadow-md transition-all hover:opacity-90 hover:shadow-lg"
-            style={{ backgroundColor: 'var(--brand-primary)' }}
-          >
-            Jetzt Angebot berechnen →
-          </Link>
-          <span className="text-sm text-gray-400">Kostenlos · Unverbindlich</span>
-        </div>
-
-        {/* Trust Badges */}
-        <div className="mt-20 grid w-full max-w-3xl grid-cols-1 gap-6 sm:grid-cols-3">
-          {TRUST_ITEMS.map((item) => (
+        {/* Vertrauens-Zeile */}
+        <div className="mt-16 grid w-full max-w-3xl grid-cols-1 gap-6 sm:grid-cols-3">
+          {TRUST_ITEMS.map((item, i) => (
             <div
               key={item.title}
               className="flex flex-col items-center gap-3 rounded-2xl border border-gray-100 bg-gray-50 p-6 text-center"
             >
               <div
                 className="flex h-12 w-12 items-center justify-center rounded-xl text-white"
-                style={{ backgroundColor: 'var(--brand-primary)' }}
+                style={{ backgroundColor: c.primaryColor }}
               >
-                {item.icon}
+                {TRUST_ICONS[i]}
               </div>
               <h3 className="font-semibold text-gray-900">{item.title}</h3>
               <p className="text-sm leading-relaxed text-gray-500">{item.text}</p>
             </div>
           ))}
         </div>
+      </section>
 
-        {/* Zielgruppen */}
-        <div className="mt-16 flex flex-wrap justify-center gap-2">
-          {COMPANY_CONFIG.targetGroups.map((group) => (
-            <span
-              key={group}
-              className="rounded-full border border-gray-200 bg-white px-4 py-1.5 text-sm text-gray-500 shadow-sm"
-            >
-              {group}
-            </span>
-          ))}
+      {/* Leistungen */}
+      <section className="border-t border-gray-100 bg-gray-50 px-6 py-16">
+        <div className="mx-auto max-w-3xl">
+          <h2 className="text-center text-2xl font-bold text-gray-900">Unsere Leistungen</h2>
+          <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {SERVICES.map((s) => (
+              <div key={s.id} className="rounded-xl border border-gray-200 bg-white p-5">
+                <h3 className="font-semibold text-gray-900">{s.name}</h3>
+                {s.description && <p className="mt-1 text-sm leading-relaxed text-gray-500">{s.description}</p>}
+              </div>
+            ))}
+          </div>
         </div>
+      </section>
+
+      {/* Über uns */}
+      {c.ueberUns && (
+        <section className="px-6 py-16">
+          <div className="mx-auto max-w-2xl text-center">
+            <h2 className="text-2xl font-bold text-gray-900">Über uns</h2>
+            <p className="mt-4 text-lg leading-relaxed text-gray-600">
+              {c.ueberUns}
+              {c.gruendungsjahr && ` Seit ${c.gruendungsjahr} für Sie da.`}
+            </p>
+          </div>
+        </section>
+      )}
+
+      {/* Einzugsgebiet */}
+      {c.einzugsgebiet && (
+        <section className="border-t border-gray-100 bg-gray-50 px-6 py-10 text-center">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-400">Einzugsgebiet</h2>
+          <p className="mt-2 text-lg text-gray-700">{c.einzugsgebiet}</p>
+        </section>
+      )}
+
+      {/* Kontakt */}
+      {(c.telefon || c.email || c.adresse) && (
+        <section className="px-6 py-16 text-center">
+          <h2 className="text-2xl font-bold text-gray-900">Kontakt</h2>
+          <div className="mt-6 flex flex-col items-center gap-2 text-lg">
+            {c.telefon && (
+              <a href={`tel:${c.telefon.replace(/\s+/g, '')}`} className="font-medium hover:underline" style={{ color: c.primaryColor }}>
+                {c.telefon}
+              </a>
+            )}
+            {c.email && (
+              <a href={`mailto:${c.email}`} className="font-medium hover:underline" style={{ color: c.primaryColor }}>
+                {c.email}
+              </a>
+            )}
+            {c.adresse && <p className="text-gray-500">{c.adresse}</p>}
+          </div>
+        </section>
+      )}
+
+      {/* Zweiter CTA */}
+      <section className="border-t border-gray-100 bg-gray-50 px-6 py-16 text-center">
+        <CtaButton>Jetzt Angebot berechnen →</CtaButton>
       </section>
 
       {/* Footer */}
       <footer className="border-t border-gray-100 px-6 py-5 text-center text-xs text-gray-400">
-        <p>© {new Date().getFullYear()} {COMPANY_CONFIG.name} · {COMPANY_CONFIG.location}</p>
-        <div className="mt-2 flex justify-center gap-4">
-          <button onClick={() => setModal('impressum')} className="hover:text-gray-600 underline">
-            Impressum
-          </button>
-          <button onClick={() => setModal('datenschutz')} className="hover:text-gray-600 underline">
-            Datenschutz
-          </button>
-        </div>
+        <p>© {new Date().getFullYear()} {c.name} · {c.location}</p>
+        <LegalModals />
       </footer>
     </main>
   )
