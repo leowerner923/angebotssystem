@@ -72,9 +72,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   if (!authChecked) return null
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <aside className="w-64 bg-slate-900 text-white flex flex-col">
+    <div className="flex min-h-screen flex-col bg-gray-50 md:flex-row">
+      {/* Mobile Kopfzeile */}
+      <header className="flex items-center justify-between border-b border-slate-800 bg-slate-900 px-4 py-3 text-white md:hidden">
+        <span className="text-sm font-bold">{COMPANY_CONFIG.name}</span>
+        <span className="text-xs text-slate-400">{COMPANY_CONFIG.location}</span>
+      </header>
 
+      {/* Sidebar – ab md sichtbar */}
+      <aside className="hidden w-64 flex-col bg-slate-900 text-white md:flex">
         {/* LOGO / SCHRIFTZUG */}
         <div className="flex flex-col items-center gap-1 px-5 py-6 border-b border-white/10">
           <span className="text-lg font-bold text-white text-center leading-tight">
@@ -108,10 +114,28 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="px-5 py-4 border-t border-white/10">
           <p className="text-xs text-slate-500 text-center">Angebotssystem</p>
         </div>
-
       </aside>
 
-      <main className="flex-1 p-8">{children}</main>
+      <main className="flex-1 overflow-x-hidden p-4 pb-20 md:p-8 md:pb-8">{children}</main>
+
+      {/* Untere Navigation – nur auf schmalen Screens */}
+      <nav className="fixed inset-x-0 bottom-0 z-20 flex border-t border-gray-200 bg-white md:hidden">
+        {NAV_LINKS.map((link) => {
+          const active = pathname === link.href
+          return (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`flex flex-1 flex-col items-center gap-0.5 py-2 text-[10px] ${
+                active ? 'text-blue-600' : 'text-gray-400'
+              }`}
+            >
+              {link.icon}
+              {link.label}
+            </Link>
+          )
+        })}
+      </nav>
     </div>
   )
 }
